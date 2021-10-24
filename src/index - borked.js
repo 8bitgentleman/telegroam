@@ -6,14 +6,12 @@ import {
   getBlockUidByTextOnPage,
   getPageTitleByPageUid, 
   getFirstChildUidByBlockUid,
-  getBasicTreeByParentUid,
   getPageUidByPageTitle
    } from "roam-client";
 import { 
   createConfigObserver,
   getSettingValueFromTree,
-  toFlexRegex,
-  getSubTree} from "roamjs-components";
+  toFlexRegex} from "roamjs-components";
 import firebase from "firebase/app";
 import InternalSettingsPanel from "./InternalSettingsPanel";
 import ShortcodeSettingsPanel from "./ShortcodeSettingsPanel";
@@ -21,7 +19,6 @@ import ShortcodeSettingsPanel from "./ShortcodeSettingsPanel";
 import { FocusStyleManager } from "@blueprintjs/core";
 // import the telegroam js here too?
 // import startTelegroam from './telegroam';
-import extractTweet from './_extractTweet';
 
 
 const ID = "telegroam";
@@ -43,14 +40,14 @@ runExtension(ID, () => {
               type: "text",
               title: "API Key",
               description:
-                "Your custom Telegram Bot API key. Refresh page after update.",
+                "Your custom Telegram Bot API key",
               // defaultValue: "xx",
             },
             {
               type: "text",
               title: "Inbox Name",
               description:
-                "The tag your telegram imports will be nested under. Refresh page after update.",
+                "The tag your telegram imports will be nested under",
               defaultValue: "Inbox",
             },
             {
@@ -193,23 +190,29 @@ runExtension(ID, () => {
       ],
     },
   });
-  const tree = getTreeByPageName(CONFIG);
-  const telegramSetup = getBasicTreeByParentUid(
-    getSubTree({tree, key: "Telegram Setup"}).uid);
+  // const tree = getTreeByPageName(CONFIG);
+  // console.log("TREE",tree)
+  // let telegramApiKey = getSettingValueFromTree({
+  //   tree: tree,
+  //   key: "API Key",
+  // });
 
-  // I'm doing this manually for testing but ideally these are loaded from the shorcodesPanel
-  var shortcodes = new Map();
-  shortcodes.set(".t", extractTweet);
-  shortcodes.set('.d', "D&D");
-  shortcodes.set(".apt", "moving apartments");
-
-   function isActionable(text) {
-     if (text.charAt(0) === '.') {
-       return true
-     } else {
-       return false
-     }
-   }
+  const timestampNesting = tree.some((t) =>
+    toFlexRegex("Timestamp nesting").test(t.text)
+  );
+  // // I'm doing this manually for testing but ideally these are loaded from the shorcodesPanel
+  // var shortcodes = new Map();
+  // shortcodes.set(".t", "test");
+  // shortcodes.set('.d', "D&D");
+  // shortcodes.set(".apt", "moving apartments");
+  
+  function isActionable(text) {
+    if (text.charAt(0) === '.') {
+      return true
+    } else {
+      return false
+    }
+  }
 
   function massage(text) {
     // dont' love this approach seems like it needs to be smarter
@@ -217,51 +220,19 @@ runExtension(ID, () => {
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
     // see if there is an actionable tag
     if (isActionable(text)) {
-      console.log('is actionable')
       var actionableTag = text.split(" ")[0]
       //check if a shortcode is defined
       if (shortcodes.has(actionableTag)) {
-        if (typeof shortcodes.get(actionableTag) === 'string') {
-          console.log('is actionable string')
-          //replace the shortcode with the actual tag
-          //should decide if we indent or not too
-          var regex = new RegExp("^" + actionableTag, "g");
-          text = text.replace(regex, `#[[${shortcodes.get(actionableTag)}]]`);
-        } else if (typeof shortcodes.get(actionableTag) === 'function') {
-          console.log("actionable function")
-          // let tweet = await shortcodes.get(actionableTag)(text)
-          // console.log(tweet)
-        }
+        //replace the shortcode with the actual tag
+        //should decide if we indent or not too
+        var regex = new RegExp("^" + actionableTag, "g");
+        text = text.replace(regex, `#[[${shortcodes.get(actionableTag)}]]`);
       }
       console.log(actionableTag, text)
     }
-    console.log(text)
     return text
     }
-
-  function findBotAttribute(name) {
-    const BOT_PAGE_NAME = "Telegram Bot"
-
-    let x = roamAlphaAPI.q(`[
-        :find (pull ?block [:block/uid :block/string])
-        :where
-          [?page :node/title "${BOT_PAGE_NAME}"]
-          [?block :block/page ?page]
-          [?block :block/refs ?ref]
-          [?ref :node/title "${name}"]
-          [?block :block/string ?string]
-      ]`)
-
-    if (!x.length) {
-      throw new Error(`attribute ${name} missing from [[${BOT_PAGE_NAME}]]`)
-    }
-
-    return {
-      uid: x[0][0].uid,
-      value: x[0][0].string.split("::")[1].trim(),
-    }
-  }
-
+  
   function uidForToday() {
     let today = new Date
     let yyyy = today.getFullYear()
@@ -289,11 +260,6 @@ runExtension(ID, () => {
     }
   }
 
-  let telegramApiKey = getSettingValueFromTree({
-    tree: telegramSetup,
-    key: "API Key",
-  });
-
   function unlinkify(s) {
     if (s.match(/^\[.*?\]\((.*?)\)$/)) {
       return RegExp.$1
@@ -303,27 +269,52 @@ runExtension(ID, () => {
   }
 
   async function updateFromTelegram() {
-    let corsProxyUrl =
-      stripTrailingSlash(
-        unlinkify(
-          findBotAttribute("Trusted Media Proxy").value))
+    const debugMode = tree.some((t) =>
+      toFlexRegex("Debug mode").test(t.text)
+    );
+    let corsProxyUrl = stripTrailingSlash(
+            unlinkify(
+              getSettingValueFromTree({
+          tree: tree,
+          key: "Trusted Media Proxy",
+        })));
     let inboxName = getSettingValueFromTree({
-      tree: telegramSetup,
+      tree: tree,
       key: "Inbox Name",
     });
 
-    // let inboxName = findBotAttribute("Inbox Name").value
-    //  console.log(tinboxName, inboxName)
     let api = `https://api.telegram.org/bot${telegramApiKey}`
 
     let updateId = null
-    let updateIdBlock = findBotAttribute("Latest Update ID")
+    let updateIdBlock
+    try{
+      // try to get the latest update id
+       updateIdBlock = getSettingValueFromTree({
+        tree: tree,
+        key: "Latest Update ID",
+      });
+    } catch(error){
+      // if the latest update id doesn't exist yet first create its parent block with an empty child then try the update again
+      console.error(error)
+      createNestedBlock(getPageUidByPageTitle(`roam/js/${ID}`), {
+        string: "Latest Update ID",
+        children: [{
+          string: ""
+        }]
+      })
+      updateIdBlock = getSettingValueFromTree({
+        tree: tree,
+        key: "Latest Update ID",
+      });
+      
+    }
 
-    if (updateIdBlock.value.match(/^\d+$/)) {
-      updateId = +updateIdBlock.value + 1
+    if (updateIdBlock.match(/^\d+$/)) {
+      updateId = +updateIdBlock + 1
     }
 
     async function GET(path) {
+
       let response = await fetch(`${api}/${path}`)
       if (response.ok) {
         return await response.json()
@@ -334,18 +325,25 @@ runExtension(ID, () => {
 
     let updateResponse = await GET(`getUpdates?offset=${updateId}&timeout=60`)
     let dailyNoteUid = uidForToday()
-
+    let dailyPageTitle = getPageTitleByPageUid(dailyNoteUid);
     let inboxUid
+    inboxUid = getBlockUidByTextOnPage({
+      text: inboxName,
+      title: dailyPageTitle
+    });
     let inboxUids = roamAlphaAPI.q(`[
-        :find (?uid ...)
-        :where
-          [?today :block/uid "${dailyNoteUid}"]
-          [?today :block/children ?block]
-          [?block :block/string "${inboxName}"]
-          [?block :block/uid ?uid]
-      ]`)
+      :find (?uid ...)
+      :where
+        [?today :block/uid "${dailyNoteUid}"]
+        [?today :block/children ?block]
+        [?block :block/string "${inboxName}"]
+        [?block :block/uid ?uid]
+    ]`)
 
-
+    if (debugMode === true){
+      console.log("debugMode is a GO", dailyNoteUid, dailyPageTitle, inboxUid)
+      console.log("update FromTelegram", inboxUids)
+    }
 
     let maxOrder = findMaxOrder(inboxUid)
 
@@ -353,16 +351,13 @@ runExtension(ID, () => {
       if (inboxUids.length) {
         inboxUid = inboxUids[0]
       } else {
-        inboxUid = roamAlphaAPI.util.generateUID()
-        roamAlphaAPI.createBlock({
-          location: {
-            "parent-uid": dailyNoteUid,
-            order: 0
+        // inboxUid = roamAlphaAPI.util.generateUID()
+        createBlock({
+          node: {
+            text: inboxName
           },
-          block: {
-            uid: inboxUid,
-            string: inboxName
-          }
+          parentUid: dailyNoteUid,
+          order: 0
         })
       }
       let i = 1
@@ -373,13 +368,25 @@ runExtension(ID, () => {
 
       // Save the latest Telegram message ID in the Roam graph.
       let lastUpdate = updateResponse.result[updateResponse.result.length - 1]
+
+      let updateIdParent = getBlockUidByTextOnPage({
+        text: 'Latest Update ID',
+        title: `roam/js/${ID}`});
+
+        let updateIdBlockChild = getFirstChildUidByBlockUid(updateIdParent)
+
+      // updateId = lastUpdate.update_id
       roamAlphaAPI.updateBlock({
         block: {
-          uid: updateIdBlock.uid,
-          string: `Latest Update ID:: ${lastUpdate.update_id}`
+          uid: updateIdBlockChild,
+          string: lastUpdate.update_id.toString()
         }
       })
     }
+    // updateIdBlock = getSettingValueFromTree({
+    //     tree: tree,
+    //     key: "Latest Update ID",
+    //   });
 
     function findMaxOrder(parent) {
       let orders = roamAlphaAPI.q(`[
@@ -537,14 +544,24 @@ runExtension(ID, () => {
       }
 
       async function handleMessage() {
-        let name = message.from ? message.from.first_name : null
-        let hhmm = formatTime(message.date)
+        // deal with sender nesting here
+        let senderNesting = tree.some((t) =>
+          toFlexRegex("Sender Nesting").test(t.text)
+        );
+        if (senderNesting === true) {
+          let name = message.from ? message.from.first_name : null
+        }
+        // deal with Timestamp nesting here
+        if (timestampNesting === true) {
+          let hhmm = formatTime(message.date)
+        }
         let text = massage(message.text || "")
-        console.log("text", text)
 
         let uid = `telegram-${message.chat.id}-${message.message_id}`
 
-        // console.log(message)
+        if (debugMode === true){
+          console.log("handle message", message)
+        }
 
         let parent = inboxUid
 
@@ -565,20 +582,24 @@ runExtension(ID, () => {
             })
           }
         }
-        //   remove timestamping
-        //   createNestedBlock(parent, {
-        //     uid,
-        //     order: maxOrder + i,
-        //     string: `${hhmm}`,
-        //     children: [{
-        //       string: `${text}`,
-        //     }]
-        //   })
-        createNestedBlock(parent, {
+        // nest under timestamp
+        if (timestampNesting === true) {
+          createNestedBlock(
+            parent,
+            uid,
+            maxOrder + i,
+            `${hhmm}`,
+            [{
+              string: `${text}`,
+            }]
+          )
+        } else {
+          createNestedBlock(parent, {
           uid,
           order: 'last',
           string: `${text}`,
         })
+      }
 
         async function insertFile(fileid, generate) {
           let photo = await GET(
@@ -594,7 +615,10 @@ runExtension(ID, () => {
             string: `Uploading in progress:: ${message.chat.id} ${fileid}`
           })
 
-          // console.log("fetching", url, "from proxy")
+          if (debugMode === true){
+            console.log("fetching", url, "from proxy")
+          }
+
           let blobResponse = await fetch(
             `${corsProxyUrl}/${url}`
           )
@@ -604,8 +628,9 @@ runExtension(ID, () => {
           let ref = firebase.storage().ref().child(
             `imgs/app/${graphName()}/${mediauid}`
           )
-
-          //console.log("uploading", url, "to Roam Firebase")
+          if (debugMode === true) {
+            console.log("uploading", url, "to Roam Firebase")
+          }
           let result = await ref.put(blob)
           let firebaseUrl = await ref.getDownloadURL()
 
@@ -858,252 +883,67 @@ runExtension(ID, () => {
     }
   }
 
-  async function updateFromTelegramContinuously() {
-    for (;;) {
-      try {
-        let result = await runWithMutualExclusionLock({
-          waitSeconds: 30,
-          action: async () => {
-            // console.log("telegroam: lock acquired; fetching messages")
-            return await updateFromTelegram()
-          }
-        })
-
-      } catch (e) {
-        console.error(e)
-        // console.log("telegroam: ignoring error; retrying in 30s")
-        if (currentLockPath) {
-          // console.log("telegroam: releasing lock via beacon")
-          navigator.sendBeacon(currentLockPath + "/release")
-        }
-        await sleep(30)
-      }
-    }
-  }
-
-  function graphName() {
-    return document.location.hash.split("/")[2]
-  }
-
-  async function startTelegroam() {
-    // We need to use the Firebase SDK, which Roam already uses, but
-    // Roam uses it via Clojure or whatever, so we import the SDK
-    // JavaScript ourselves from their CDN...
-
-    if (document.querySelector("#firebase-script")) {
-      okay()
-    } else {
-      let script = document.createElement("SCRIPT")
-      script.id = "firebase-script"
-      script.src = "https://www.gstatic.com/firebasejs/8.4.1/firebase.js"
-      script.onload = okay
-      document.body.appendChild(script)
-    }
-
-    async function okay() {
-      if (firebase.apps.length == 0) {
-
-        // This is Roam's Firebase configuration stuff.
-        // I hope they don't change it.
-        let firebaseConfig = {
-          apiKey: "AIzaSyDEtDZa7Sikv7_-dFoh9N5EuEmGJqhyK9g",
-          authDomain: "app.roamresearch.com",
-          databaseURL: "https://firescript-577a2.firebaseio.com",
-          storageBucket: "firescript-577a2.appspot.com",
-        }
-
-        firebase.initializeApp(firebaseConfig)
-      }
-
-      updateFromTelegramContinuously()
-    }
-  }
-
-  startTelegroam()
-
-  // The following VCard parser is copied from
-  //
-  //   https://github.com/Heymdall/vcard
-  //
-  // MIT License
-  //
-  // Copyright (c) 2018 Aleksandr Kitov
-  //
-  // Permission is hereby granted, free of charge, to any person
-  // obtaining a copy of this software and associated documentation
-  // files (the "Software"), to deal in the Software without
-  // restriction, including without limitation the rights to use, copy,
-  // modify, merge, publish, distribute, sublicense, and/or sell copies
-  // of the Software, and to permit persons to whom the Software is
-  // furnished to do so, subject to the following conditions:
-  //
-  // The above copyright notice and this permission notice shall be included
-  // in all copies or substantial portions of the Software.
-  //
-  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  // SOFTWARE.
-  //
-  function parseVcard(string) {
-    var PREFIX = 'BEGIN:VCARD',
-      POSTFIX = 'END:VCARD';
-
-    /**
-     * Return json representation of vCard
-     * @param {string} string raw vCard
-     * @returns {*}
-     */
-    function parse(string) {
-      var result = {},
-        lines = string.split(/\r\n|\r|\n/),
-        count = lines.length,
-        pieces,
-        key,
-        value,
-        meta,
-        namespace;
-
-      for (var i = 0; i < count; i++) {
-        if (lines[i] === '') {
-          continue;
-        }
-        if (lines[i].toUpperCase() === PREFIX || lines[i].toUpperCase() === POSTFIX) {
-          continue;
-        }
-        var data = lines[i];
-
-        /**
-         * Check that next line continues current
-         * @param {number} i
-         * @returns {boolean}
-         */
-        var isValueContinued = function (i) {
-          return i + 1 < count && (lines[i + 1][0] === ' ' || lines[i + 1][0] === '\t');
-        };
-        // handle multiline properties (i.e. photo).
-        // next line should start with space or tab character
-        if (isValueContinued(i)) {
-          while (isValueContinued(i)) {
-            data += lines[i + 1].trim();
-            i++;
-          }
-        }
-
-        pieces = data.split(':');
-        key = pieces.shift();
-        value = pieces.join(':');
-        namespace = false;
-        meta = {};
-
-        // meta fields in property
-        if (key.match(/;/)) {
-          key = key
-            .replace(/\\;/g, 'ΩΩΩ')
-            .replace(/\\,/, ',');
-          var metaArr = key.split(';').map(function (item) {
-            return item.replace(/ΩΩΩ/g, ';');
-          });
-          key = metaArr.shift();
-          metaArr.forEach(function (item) {
-            var arr = item.split('=');
-            arr[0] = arr[0].toLowerCase();
-            if (arr[0].length === 0) {
-              return;
+    async function updateFromTelegramContinuously() {
+      for (;;) {
+        try {
+          let result = await runWithMutualExclusionLock({
+            waitSeconds: 30,
+            action: async () => {
+              // console.log("telegroam: lock acquired; fetching messages")
+              return await updateFromTelegram()
             }
-            if (meta[arr[0]]) {
-              meta[arr[0]].push(arr[1]);
-            } else {
-              meta[arr[0]] = [arr[1]];
-            }
-          });
+          })
+
+        } catch (e) {
+          console.error(e)
+          // console.log("telegroam: ignoring error; retrying in 30s")
+          if (currentLockPath) {
+            // console.log("telegroam: releasing lock via beacon")
+            navigator.sendBeacon(currentLockPath + "/release")
+          }
+          await sleep(30)
         }
-
-        // values with \n
-        value = value
-          .replace(/\\n/g, '\n');
-
-        value = tryToSplit(value);
-
-        // Grouped properties
-        if (key.match(/\./)) {
-          var arr = key.split('.');
-          key = arr[1];
-          namespace = arr[0];
-        }
-
-        var newValue = {
-          value: value
-        };
-        if (Object.keys(meta).length) {
-          newValue.meta = meta;
-        }
-        if (namespace) {
-          newValue.namespace = namespace;
-        }
-
-        if (key.indexOf('X-') !== 0) {
-          key = key.toLowerCase();
-        }
-
-        if (typeof result[key] === 'undefined') {
-          result[key] = [newValue];
-        } else {
-          result[key].push(newValue);
-        }
-
       }
-
-      return result;
     }
 
-    var HAS_SEMICOLON_SEPARATOR = /[^\\];|^;/,
-      HAS_COMMA_SEPARATOR = /[^\\],|^,/;
-    /**
-     * Split value by "," or ";" and remove escape sequences for this separators
-     * @param {string} value
-     * @returns {string|string[]
-     */
-    function tryToSplit(value) {
-      if (value.match(HAS_SEMICOLON_SEPARATOR)) {
-        value = value.replace(/\\,/g, ',');
-        return splitValue(value, ';');
-      } else if (value.match(HAS_COMMA_SEPARATOR)) {
-        value = value.replace(/\\;/g, ';');
-        return splitValue(value, ',');
+    function graphName() {
+      return document.location.hash.split("/")[2]
+    }
+
+    async function startTelegroam() {
+      // We need to use the Firebase SDK, which Roam already uses, but
+      // Roam uses it via Clojure or whatever, so we import the SDK
+      // JavaScript ourselves from their CDN...
+
+      if (document.querySelector("#firebase-script")) {
+        okay()
       } else {
-        return value
-          .replace(/\\,/g, ',')
-          .replace(/\\;/g, ';');
+        let script = document.createElement("SCRIPT")
+        script.id = "firebase-script"
+        script.src = "https://www.gstatic.com/firebasejs/8.4.1/firebase.js"
+        script.onload = okay
+        document.body.appendChild(script)
+      }
+
+      async function okay() {
+        if (firebase.apps.length == 0) {
+
+          // This is Roam's Firebase configuration stuff.
+          // I hope they don't change it.
+          let firebaseConfig = {
+            apiKey: "AIzaSyDEtDZa7Sikv7_-dFoh9N5EuEmGJqhyK9g",
+            authDomain: "app.roamresearch.com",
+            databaseURL: "https://firescript-577a2.firebaseio.com",
+            storageBucket: "firescript-577a2.appspot.com",
+          }
+
+          firebase.initializeApp(firebaseConfig)
+        }
+
+        updateFromTelegramContinuously()
       }
     }
-    /**
-     * Split vcard field value by separator
-     * @param {string|string[]} value
-     * @param {string} separator
-     * @returns {string|string[]}
-     */
-    function splitValue(value, separator) {
-      var separatorRegexp = new RegExp(separator);
-      var escapedSeparatorRegexp = new RegExp('\\\\' + separator, 'g');
-      // easiest way, replace it with really rare character sequence
-      value = value.replace(escapedSeparatorRegexp, 'ΩΩΩ');
-      if (value.match(separatorRegexp)) {
-        value = value.split(separator);
 
-        value = value.map(function (item) {
-          return item.replace(/ΩΩΩ/g, separator);
-        });
-      } else {
-        value = value.replace(/ΩΩΩ/g, separator);
-      }
-      return value;
-    }
-
-    return parse(string)
-  }
+    startTelegroam()
 
 });

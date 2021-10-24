@@ -3,7 +3,7 @@
 import {
   toRoamDate } from "roam-client"; 
 
-function extractTweet(message){
+async function extractTweet(message){
 
   const regex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/;
   var urlRegex = new RegExp(regex, 'ig');
@@ -18,6 +18,7 @@ function extractTweet(message){
         return urlsTab[urlsTab.length - 1];
     } else { return 0; }
   }
+  
   function getDatefromTweet(htmlString){
     var htmlObject = document.createElement('div');
     htmlObject.innerHTML = htmlString;
@@ -74,5 +75,6 @@ function extractTweet(message){
   }
   });
 }
+
 
 export default extractTweet;
