@@ -211,32 +211,32 @@ runExtension(ID, () => {
      }
    }
 
-  function massage(text) {
+  async function massage(text) {
     // dont' love this approach seems like it needs to be smarter
     // see if there is a thread
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
     // see if there is an actionable tag
     if (isActionable(text)) {
-      console.log('is actionable')
       var actionableTag = text.split(" ")[0]
       //check if a shortcode is defined
       if (shortcodes.has(actionableTag)) {
+        // TODO stackable shortcodes .t.d.apt
         if (typeof shortcodes.get(actionableTag) === 'string') {
-          console.log('is actionable string')
           //replace the shortcode with the actual tag
           //should decide if we indent or not too
+          // TODO figure out how to indent
           var regex = new RegExp("^" + actionableTag, "g");
           text = text.replace(regex, `#[[${shortcodes.get(actionableTag)}]]`);
         } else if (typeof shortcodes.get(actionableTag) === 'function') {
-          console.log("actionable function")
-          // let tweet = await shortcodes.get(actionableTag)(text)
-          // console.log(tweet)
+          // this replaces the whole message with the tweet, may be problematic later
+
+          text = await shortcodes.get(actionableTag)(text)
+            // text = tweet
+ 
         }
       }
-      console.log(actionableTag, text)
     }
-    console.log(text)
-    return text
+    return  text
     }
 
   function findBotAttribute(name) {
@@ -370,7 +370,7 @@ runExtension(ID, () => {
         await handleTelegramUpdate(result, i)
           ++i
       }
-
+      // TODO fix this
       // Save the latest Telegram message ID in the Roam graph.
       let lastUpdate = updateResponse.result[updateResponse.result.length - 1]
       roamAlphaAPI.updateBlock({
@@ -539,8 +539,7 @@ runExtension(ID, () => {
       async function handleMessage() {
         let name = message.from ? message.from.first_name : null
         let hhmm = formatTime(message.date)
-        let text = massage(message.text || "")
-        console.log("text", text)
+        let text = await massage(message.text || "")
 
         let uid = `telegram-${message.chat.id}-${message.message_id}`
 
