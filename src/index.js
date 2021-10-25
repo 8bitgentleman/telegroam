@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 Matt Vogel - adapted from Mikael Brockman & Mark Robertson 
+ *
+ * See the LICENSE file (MIT).
+ */
 import {
   toConfig,
   runExtension, 

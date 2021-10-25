@@ -1,5 +1,9 @@
-// taken and modified from Fabrice Gallet's Tweet Extactor
-// released October 7th, 2021
+/*
+ * Copyright(c) 2021 Matt Vogel - adapted from Fabrice Gallet 's Tweet Extactor
+ * released October 7 th, 2021
+ * See the LICENSE file (MIT).
+ */
+
 import {
   toRoamDate } from "roam-client"; 
 

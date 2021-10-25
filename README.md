@@ -20,10 +20,13 @@ h3 align="center">telegroam - roamjs fork</h3>
 - [Style Guide](#style)
 
 ## 🚀 New Features <a name = "features"></a>
-- Now customizable with @david Vargas's roamjs settings panel
-- Only adds a single inbox tag when needed instead of automatically every day
-- Makes  contriversial design options optional (media tags)
-- Adds in the concept of actionable inline tag shortcodes (ala [Readwise](https://blog.readwise.io/tag-your-highlights-while-you-read/))
+- **Feat:** Now customize nearly everything with [@david Vargas's roamjs settings panel](https://github.com/dvargas92495/roamjs-components)
+- **Fix:** Only adds a single inbox tag when needed instead of automatically every day
+- **Fix:** Makes  contriversial design options optional (media tags)
+- **Fix:** Correctly upload videos
+- **Feat:** Adds in the concept of actionable inline tag shortcodes (ala [Readwise](https://blog.readwise.io/tag-your-highlights-while-you-read/))
+- **Feat:** automatic tweet extraction, inspired by [Fabrice Gallet's Tweet Extactor](https://twitter.com/fbgallet/status/1440709705484038162)
+- **Feat:** multiblock support with customizable tag, modified from [Calhistorian's telegroam fork](https://github.com/Calhistorian/RoamanCircus)
 
 ## ⚠️ Warning!
 
@@ -92,20 +95,20 @@ I will make this more convenient later.
 7. Reload Roam.
 
 ## 🚗 TODO Roadmap <a name = "roadmap"></a>
-- [ ] squash that pesky empty `child` bug
+- [x] squash that pesky empty `child` bug
 - [ ] create a custom panel for shortcodes
     - this will be a combination of the multi and  pages component. Left most input is the shortcode and right side can only be filled by pages
-- [ ] figure out how to correctly import media (I messed this up in the switch to typescript somehow)
+- [x] figure out how to correctly import media (I messed this up in the switch to typescript somehow)
 - [ ] actually update the attribute variables when they change in the settings panel
 - [ ] actually toggle timestamp nesting on/off
 - [ ] actually toggle message name nesting on/off
+- [x] Support custom shortcodes
 - [ ] actually toggle shortcode nesting
 - [ ] figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message
-- [ ] Support tweet extraction using [this smartblock](https://github.com/dvargas92495/SmartBlocks/issues/216) as inspiration. Extracted text would be the parent with the tweet URL as a child block
+- [x] Support tweet extraction using [this smartblock](https://github.com/dvargas92495/SmartBlocks/issues/216) as inspiration. Extracted text would be the parent with the tweet URL as a child block
 - [ ] support [Readwise esque block formatting shortcodes](https://blog.readwise.io/add-chapters-to-highlights/) (.h1, .h2, .ar (right alight), .al (left alight))
 - [ ] only print stuff to the console if user has set debug mode to true
 - [ ] bring back toggle media tags
-- [ ] rebase with master and add back in proxy info
 - [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
 
 # Git and GitHub Style Guide <a name = "style"></a>
