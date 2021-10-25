@@ -112,6 +112,8 @@ I will make this more convenient later.
 - [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
 - [ ] support stackable shortcodes .t.d.apt
 - [ ] fix media nesting (right now they nest under a blank block because I cut out mediatags)
+- [ ] ignore capitalization when searching shortcodes
+
 # Git and GitHub Style Guide <a name = "style"></a>
 
 ## Commits
