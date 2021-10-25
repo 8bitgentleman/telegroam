@@ -110,7 +110,8 @@ I will make this more convenient later.
 - [ ] only print stuff to the console if user has set debug mode to true
 - [ ] bring back toggle media tags
 - [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
-
+- [ ] support stackable shortcodes .t.d.apt
+- [ ] fix media nesting (right now they nest under a blank block because I cut out mediatags)
 # Git and GitHub Style Guide <a name = "style"></a>
 
 ## Commits

@@ -202,11 +202,16 @@ runExtension(ID, () => {
   const telegramSetup = getBasicTreeByParentUid(
     getSubTree({tree, key: "Telegram Setup"}).uid);
 
-  // I'm doing this manually for testing but ideally these are loaded from the shorcodesPanel
+  // I'm doing this manually for testing but ideally these are set and loaded from the shorcodesPanel
+  // shortcodes expand into full tags or page names similar to how Readwise does it 
   var shortcodes = new Map();
   shortcodes.set(".t", extractTweet);
   shortcodes.set('.d', "D&D");
   shortcodes.set(".apt", "moving apartments");
+  // formatting shortcodes
+  shortcodes.set(".h1", textFormatting);
+  shortcodes.set(".a", textFormatting);
+  shortcodes.set(".cv", textFormatting);
 
    function isActionable(text) {
      if (text.charAt(0) === '.') {
@@ -214,6 +219,37 @@ runExtension(ID, () => {
      } else {
        return false
      }
+   }
+
+   function textFormatting(text, shortcode=None) {
+     let heading = 0
+     let childrenViewType = 'bullet'
+     let textAlign = 'left'
+    if (shortcode === '.h1'){
+      heading = 1
+    }
+    if (shortcode === '.h2') {
+      heading = 2
+    }
+    if (shortcode === '.h3') {
+      heading = 3
+    }
+    if (shortcode === '.ac') {
+      textAlign = 'center'
+    }
+    if (shortcode === '.al') {
+      textAlign = 'left'
+    }
+    if (shortcode === '.aj') {
+      textAlign = 'justify'
+    }
+    if (shortcode === '.cvn') {
+      childrenViewType = 'numbered'
+    }
+    if (shortcode === '.cvd') {
+      childrenViewType = 'document'
+    }
+    return [heading, childrenViewType, textAlign]
    }
 
   async function massage(text) {
@@ -234,10 +270,13 @@ runExtension(ID, () => {
           text = text.replace(regex, `#[[${shortcodes.get(actionableTag)}]]`);
         } else if (typeof shortcodes.get(actionableTag) === 'function') {
           // this replaces the whole message with the tweet, may be problematic later
-
-          text = await shortcodes.get(actionableTag)(text)
-            // text = tweet
- 
+          if (shortcodes.get(actionableTag).name === 'extractTweet'){
+            console.log(shortcodes.get(actionableTag).name)
+            text = await shortcodes.get(actionableTag)(text)
+          } else if (shortcodes.get(actionableTag).name === 'textFormatting') {
+            // TODO rethink this - not the best place for formatting the block
+            console.log(textFormatting(text, actionableTag))
+          }
         }
       }
     }
@@ -403,6 +442,7 @@ runExtension(ID, () => {
       uid,
       order,
       string,
+      textFormatting,
       children = []
     }) {
       if (uid === undefined) {
@@ -578,6 +618,7 @@ runExtension(ID, () => {
         //       string: `${text}`,
         //     }]
         //   })
+        // TODO text formatting
         createNestedBlock(parent, {
           uid,
           order: 'last',
