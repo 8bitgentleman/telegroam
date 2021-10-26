@@ -20,13 +20,13 @@
 - [Style Guide](#style)
 
 ## 🚀 New Features <a name = "features"></a>
-- **Feat:** Now customize nearly everything with [@david Vargas's roamjs settings panel](https://github.com/dvargas92495/roamjs-components)
 - **Fix:** Only adds a single inbox tag when needed instead of automatically every day
 - **Fix:** Makes  contriversial design options optional (media tags)
 - **Fix:** Correctly upload videos
 - **Feat:** Adds in the concept of actionable inline tag shortcodes (ala [Readwise](https://blog.readwise.io/tag-your-highlights-while-you-read/))
 - **Feat:** automatic tweet extraction, inspired by [Fabrice Gallet's Tweet Extactor](https://twitter.com/fbgallet/status/1440709705484038162)
-- **Feat:** multiblock support with customizable tag, modified from [Calhistorian's telegroam fork](https://github.com/Calhistorian/RoamanCircus)
+- **Coming:** Now customize nearly everything with [@david Vargas's roamjs settings panel](https://github.com/dvargas92495/roamjs-components)
+- **Coming:** multiblock support with customizable tag, modified from [Calhistorian's telegroam fork](https://github.com/Calhistorian/RoamanCircus)
 
 ## ⚠️ Warning!
 
