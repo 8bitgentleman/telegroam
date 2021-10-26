@@ -170,8 +170,8 @@ runExtension(ID, () => {
             {
               type: "custom",
               title: "Latest Update ID",
-              description:"For internal use only",
-              defaultValue: "",
+              description: "For internal use only",
+              defaultValue: [{text: ''}],
               options: {
                 component: InternalSettingsPanel,
               },
@@ -179,12 +179,12 @@ runExtension(ID, () => {
             {
               type: "custom",
               title: "Busy Since",
-              defaultValue: "",
+              defaultValue: [{text: ''}],
               description:
                 "For internal use only",
-              options: {
-                component: InternalSettingsPanel,
-              },
+                options: {
+                  component: InternalSettingsPanel,
+                },
             },
             {
               title: "Debug mode",
@@ -214,6 +214,12 @@ runExtension(ID, () => {
   shortcodes.set(".h1", textFormatting);
   shortcodes.set(".a", textFormatting);
   shortcodes.set(".cv", textFormatting);
+
+  function getSettingUIDFromTree(tree, key) {
+    let node = tree.find((s) => toFlexRegex(key).test(s.text.trim()));
+    let uid = node?.children?.[0].uid.trim()
+    return uid;
+  }
 
    function isActionable(text) {
      if (text.charAt(0) === '.') {
@@ -285,30 +291,6 @@ runExtension(ID, () => {
     return  text
     }
 
-  function findBotAttribute(name) {
-    // TODO fix this
-    const BOT_PAGE_NAME = `roam/js${ID}`
-
-    let x = roamAlphaAPI.q(`[
-        :find (pull ?block [:block/uid :block/string])
-        :where
-          [?page :node/title "${BOT_PAGE_NAME}"]
-          [?block :block/page ?page]
-          [?block :block/refs ?ref]
-          [?ref :node/title "${name}"]
-          [?block :block/string ?string]
-      ]`)
-
-    if (!x.length) {
-      throw new Error(`attribute ${name} missing from [[${BOT_PAGE_NAME}]]`)
-    }
-
-    return {
-      uid: x[0][0].uid,
-      value: x[0][0].string.split("::")[1].trim(),
-    }
-  }
-
   function uidForToday() {
     let today = new Date
     let yyyy = today.getFullYear()
@@ -367,8 +349,23 @@ runExtension(ID, () => {
     let api = `https://api.telegram.org/bot${telegramApiKey}`
 
     let updateId = null
-    let updateIdBlock = findBotAttribute("Latest Update ID")
-
+    // let updateIdBlock = getSettingValueFromTree({
+    //   tree: internalSettings,
+    //   key: "Latest Update ID",
+    // });
+    // let updateIdBlockUID = getSettingUIDFromTree(internalSettings, "Latest Update ID");
+    let updateBlockValue = getSettingValueFromTree({
+        tree: internalSettings,
+        key: "Latest Update ID",
+      })
+    let updateIdBlock = {
+      uid: getSettingUIDFromTree(internalSettings, "Latest Update ID"),
+      value: updateBlockValue,
+    }
+    console.log(updateIdBlock)
+    
+    
+    
     if (updateIdBlock.value.match(/^\d+$/)) {
       updateId = +updateIdBlock.value + 1
     }
@@ -422,13 +419,17 @@ runExtension(ID, () => {
       }
       // TODO fix this
       // Save the latest Telegram message ID in the Roam graph.
-      let lastUpdate = updateResponse.result[updateResponse.result.length - 1]
+      
+      let lastUpdate = updateResponse.result[updateResponse.result.length - 1].toString()
+      console.log(updateIdBlock.uid, lastUpdate.update_id)
       roamAlphaAPI.updateBlock({
         block: {
           uid: updateIdBlock.uid,
-          string: `Latest Update ID:: ${lastUpdate.update_id}`
+          string: lastUpdate.update_id
         }
       })
+ 
+      console.log("block updated")
     }
 
     function findMaxOrder(parent) {
@@ -458,7 +459,6 @@ runExtension(ID, () => {
       if (order === undefined) {
         order = findMaxOrder(parent) + 1
       }
-
       roamAlphaAPI.createBlock({
         location: {
           "parent-uid": parent,
