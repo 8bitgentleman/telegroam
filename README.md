@@ -113,6 +113,7 @@ I will make this more convenient later.
 - [ ] support stackable shortcodes .t.d.apt
 - [ ] fix media nesting (right now they nest under a blank block because I cut out mediatags)
 - [ ] ignore capitalization when searching shortcodes
+- [ ] fix custom panel startup bug where settings blocks are not created on initialization 
 
 # Git and GitHub Style Guide <a name = "style"></a>
 

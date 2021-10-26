@@ -56,7 +56,7 @@ runExtension(ID, () => {
               title: "Inbox Name",
               description:
                 "The tag your telegram imports will be nested under. Refresh page after update.",
-              defaultValue: "Inbox",
+              defaultValue: "#inbox",
             },
             {
               type: "text",
@@ -170,9 +170,8 @@ runExtension(ID, () => {
             {
               type: "custom",
               title: "Latest Update ID",
-              description:
-                "For internal use only",
-              defaultValue: 0,
+              description:"For internal use only",
+              defaultValue: "",
               options: {
                 component: InternalSettingsPanel,
               },
@@ -180,6 +179,7 @@ runExtension(ID, () => {
             {
               type: "custom",
               title: "Busy Since",
+              defaultValue: "",
               description:
                 "For internal use only",
               options: {
@@ -201,6 +201,8 @@ runExtension(ID, () => {
   const tree = getTreeByPageName(CONFIG);
   const telegramSetup = getBasicTreeByParentUid(
     getSubTree({tree, key: "Telegram Setup"}).uid);
+  const internalSettings = getBasicTreeByParentUid(
+    getSubTree({tree, key: "Internal Settings"}).uid);
 
   // I'm doing this manually for testing but ideally these are set and loaded from the shorcodesPanel
   // shortcodes expand into full tags or page names similar to how Readwise does it 
@@ -284,7 +286,8 @@ runExtension(ID, () => {
     }
 
   function findBotAttribute(name) {
-    const BOT_PAGE_NAME = "Telegram Bot"
+    // TODO fix this
+    const BOT_PAGE_NAME = `roam/js${ID}`
 
     let x = roamAlphaAPI.q(`[
         :find (pull ?block [:block/uid :block/string])
@@ -350,13 +353,16 @@ runExtension(ID, () => {
     let corsProxyUrl =
       stripTrailingSlash(
         unlinkify(
-          findBotAttribute("Trusted Media Proxy").value))
+          getSettingValueFromTree({
+            tree: telegramSetup,
+            key: "Trusted Media Proxy",
+          })
+        ))
+
     let inboxName = getSettingValueFromTree({
       tree: telegramSetup,
       key: "Inbox Name",
     });
-
-    // let inboxName = findBotAttribute("Inbox Name").value
     //  console.log(tinboxName, inboxName)
     let api = `https://api.telegram.org/bot${telegramApiKey}`
 

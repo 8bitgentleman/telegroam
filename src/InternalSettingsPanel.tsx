@@ -6,9 +6,7 @@ import {
     getFirstChildTextByBlockUid,
 } from "roam-client";
 
-const InternalSettingsPanel = ({
-    uid,
-}: {
+const InternalSettingsPanel = ({uid,}: {
     uid?: string;
     parentUid: string;
 }) => {
