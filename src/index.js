@@ -177,16 +177,6 @@ runExtension(ID, () => {
               },
             },
             {
-              type: "custom",
-              title: "Busy Since",
-              defaultValue: [{text: ''}],
-              description:
-                "For internal use only",
-                options: {
-                  component: InternalSettingsPanel,
-                },
-            },
-            {
               title: "Debug mode",
               type: "flag",
               defaultValue: true,
@@ -201,8 +191,7 @@ runExtension(ID, () => {
   const tree = getTreeByPageName(CONFIG);
   const telegramSetup = getBasicTreeByParentUid(
     getSubTree({tree, key: "Telegram Setup"}).uid);
-  const internalSettings = getBasicTreeByParentUid(
-    getSubTree({tree, key: "Internal Settings"}).uid);
+
 
   // I'm doing this manually for testing but ideally these are set and loaded from the shorcodesPanel
   // shortcodes expand into full tags or page names similar to how Readwise does it 
@@ -332,6 +321,9 @@ runExtension(ID, () => {
   }
 
   async function updateFromTelegram() {
+    let internalSettings = getBasicTreeByParentUid(
+      getSubTree({tree, key: "Internal Settings"}).uid);
+      
     let corsProxyUrl =
       stripTrailingSlash(
         unlinkify(
@@ -345,26 +337,18 @@ runExtension(ID, () => {
       tree: telegramSetup,
       key: "Inbox Name",
     });
-    //  console.log(tinboxName, inboxName)
     let api = `https://api.telegram.org/bot${telegramApiKey}`
 
     let updateId = null
-    // let updateIdBlock = getSettingValueFromTree({
-    //   tree: internalSettings,
-    //   key: "Latest Update ID",
-    // });
-    // let updateIdBlockUID = getSettingUIDFromTree(internalSettings, "Latest Update ID");
     let updateBlockValue = getSettingValueFromTree({
         tree: internalSettings,
         key: "Latest Update ID",
       })
+
     let updateIdBlock = {
       uid: getSettingUIDFromTree(internalSettings, "Latest Update ID"),
       value: updateBlockValue,
     }
-    console.log(updateIdBlock)
-    
-    
     
     if (updateIdBlock.value.match(/^\d+$/)) {
       updateId = +updateIdBlock.value + 1
@@ -419,17 +403,14 @@ runExtension(ID, () => {
       }
       // TODO fix this
       // Save the latest Telegram message ID in the Roam graph.
-      
-      let lastUpdate = updateResponse.result[updateResponse.result.length - 1].toString()
-      console.log(updateIdBlock.uid, lastUpdate.update_id)
+      let lastUpdate = updateResponse.result[updateResponse.result.length - 1]
       roamAlphaAPI.updateBlock({
         block: {
           uid: updateIdBlock.uid,
-          string: lastUpdate.update_id
+          string: lastUpdate.update_id.toString()
         }
       })
  
-      console.log("block updated")
     }
 
     function findMaxOrder(parent) {
