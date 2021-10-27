@@ -89,6 +89,8 @@ runExtension(ID, () => {
         },
         {
           id: "Media Tags",
+          description:
+            "If checked media messages will be nested under their associated media type tags",
           toggleable: true,
           fields: [
             {
@@ -141,6 +143,12 @@ runExtension(ID, () => {
                 "If checked and if an inline tag is identified, the message will be nested under said tag",
             },
             {
+              title: "Tag stacking",
+              type: "flag",
+              defaultValue: false,
+              description: "NOT WORKING: If checked allows inline tags to be stacked (eg .h1.al)",
+            },
+            {
               type: "custom",
               title: "Tag Custom",
               description:
@@ -152,12 +160,6 @@ runExtension(ID, () => {
             {
               type: "multitext",
               title: "Tag Shortcodes",
-              description:
-                "Shortcodes and their associated expanded tags",
-            },
-            {
-              type: "pages",
-              title: "Tag pages",
               description:
                 "Shortcodes and their associated expanded tags",
             },
@@ -191,7 +193,8 @@ runExtension(ID, () => {
   const tree = getTreeByPageName(CONFIG);
   const telegramSetup = getBasicTreeByParentUid(
     getSubTree({tree, key: "Telegram Setup"}).uid);
-
+  let internalSettings = getBasicTreeByParentUid(
+        getSubTree({tree, key: "Internal Settings"}).uid);
 
   // I'm doing this manually for testing but ideally these are set and loaded from the shorcodesPanel
   // shortcodes expand into full tags or page names similar to how Readwise does it 
@@ -219,9 +222,9 @@ runExtension(ID, () => {
    }
 
    function textFormatting(text, shortcode=None) {
-     let heading = 0
-     let childrenViewType = 'bullet'
-     let textAlign = 'left'
+    let heading = 0
+    let childrenViewType = 'bullet'
+    let textAlign = 'left'
     if (shortcode === '.h1'){
       heading = 1
     }
@@ -321,7 +324,7 @@ runExtension(ID, () => {
   }
 
   async function updateFromTelegram() {
-    let internalSettings = getBasicTreeByParentUid(
+    internalSettings = getBasicTreeByParentUid(
       getSubTree({tree, key: "Internal Settings"}).uid);
       
     let corsProxyUrl =
@@ -655,37 +658,72 @@ runExtension(ID, () => {
             `getFile?chat_id=${message.chat.id}&file_id=${fileid}`)
           let path = photo.result.file_path
           let url = `https://api.telegram.org/file/bot${telegramApiKey}/${path}`
-
-          let mediauid = createNestedBlock(uid, {
-            string: generate(url)
-          })
+          let mediaTagSettings = getBasicTreeByParentUid(
+            getSubTree({tree, key: "Media Tags"}).uid);
+          let mediaTagNesting = tree.some((t) =>
+            toFlexRegex("Media Tags").test(t.text)
+          );
+          let mediauid
+          if (mediaTagNesting) {
+            let mediaTag
+            // media tag nesting
+            console.log(message)
+            if (message.location)
+            // TODO figure out while files are tagged as locations
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Location Tag"}) || "#Location"
+            if (message.voice)
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Voice Tag"}) || "#Voice"
+            if (message.video || message.video_note || message.animation)
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Video Tag"}) || "#Video"
+            if (message.photo)
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Photo Tag"}) || "#Photo"
+            if (message.contact)
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Contact Tag"}) || "#Contact"
+              // update the block with the correct media tag
+            roamAlphaAPI.updateBlock({
+              block: {
+                uid: uid,
+                string: mediaTag
+              }
+            })
+             mediauid = createNestedBlock(uid, {
+              string: generate(url)
+            })
+          } else {
+            // no media tag nesting
+            mediauid = uid
+            roamAlphaAPI.updateBlock({
+              block: {
+                uid: mediauid,
+                string: generate(url)
+              }
+            })
+            
+          }
+          
 
           let tmpuid = createNestedBlock(mediauid, {
             string: `Uploading in progress:: ${message.chat.id} ${fileid}`
           })
 
-          // console.log("fetching", url, "from proxy")
+          
           let blobResponse = await fetch(
             `${corsProxyUrl}/${url}`
           )
-
           let blob = await blobResponse.blob()
-
           let ref = firebase.storage().ref().child(
             `imgs/app/${graphName()}/${mediauid}`
           )
 
-          //console.log("uploading", url, "to Roam Firebase")
           let result = await ref.put(blob)
-          let firebaseUrl = await ref.getDownloadURL()
 
+          let firebaseUrl = await ref.getDownloadURL()
           roamAlphaAPI.updateBlock({
             block: {
               uid: mediauid,
               string: generate(firebaseUrl)
             }
           })
-
           roamAlphaAPI.deleteBlock({
             block: {
               uid: tmpuid
