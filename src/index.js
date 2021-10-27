@@ -74,7 +74,7 @@ runExtension(ID, () => {
             {
               title: "Timestamp nesting",
               type: "flag",
-              defaultValue: true,
+              defaultValue: false,
               description:
                 "If checked, blocks will be nested under a block denoting the time they were sent",
             },
@@ -96,21 +96,21 @@ runExtension(ID, () => {
               type: "text",
               defaultValue: "#Location",
               description:
-                "The tag each photo will be nested under",
+                "The tag each location will be nested under",
             },
             {
               title: "Voice Tag",
               type: "text",
               defaultValue: "#Voice",
               description:
-                "The tag each photo will be nested under",
+                "The tag each voice recording will be nested under",
             },
             {
               title: "Video Tag",
               type: "text",
               defaultValue: "#Video",
               description:
-                "The tag each photo will be nested under",
+                "The tag each video will be nested under",
             },
             {
               title: "Photo Tag",
@@ -124,7 +124,7 @@ runExtension(ID, () => {
               type: "text",
               defaultValue: "#Contact",
               description:
-                "The tag each photo will be nested under",
+                "The tag each contact will be nested under",
             },
           ],
 
@@ -349,7 +349,7 @@ runExtension(ID, () => {
       uid: getSettingUIDFromTree(internalSettings, "Latest Update ID"),
       value: updateBlockValue,
     }
-    
+
     if (updateIdBlock.value.match(/^\d+$/)) {
       updateId = +updateIdBlock.value + 1
     }
@@ -596,21 +596,59 @@ runExtension(ID, () => {
             })
           }
         }
-        //   remove timestamping
-        //   createNestedBlock(parent, {
-        //     uid,
-        //     order: maxOrder + i,
-        //     string: `${hhmm}`,
-        //     children: [{
-        //       string: `${text}`,
-        //     }]
-        //   })
+        
+        let scriptSettings = getBasicTreeByParentUid(
+          getSubTree({tree, key: "Script Settings"}).uid);
+        let timestampNesting = scriptSettings.some((t) =>
+          toFlexRegex("Timestamp nesting").test(t.text)
+        );
+        let senderNesting = scriptSettings.some((t) =>
+          toFlexRegex("Sender nesting").test(t.text)
+        );
+        console.log(timestampNesting, senderNesting)
         // TODO text formatting
-        createNestedBlock(parent, {
-          uid,
-          order: 'last',
-          string: `${text}`,
-        })
+        // check for timestamp nesting here
+        if (timestampNesting && !senderNesting) {
+            createNestedBlock(parent, {
+              uid,
+              order: 'last',
+              string: `${hhmm}`,
+              children: [{
+                string: `${text}`,
+              }]
+            })
+        } else if (!timestampNesting && senderNesting) {
+          createNestedBlock(parent, {
+            uid,
+            order: 'last',
+            string: `[[${name}]]`,
+            children: [{
+              string: `${text}`,
+            }]
+          })
+
+        } else if (timestampNesting && senderNesting) {
+          createNestedBlock(parent, {
+            uid,
+            order: 'last',
+            string: `${hhmm}`,
+            children: [{
+              string: `[[${name}]]`,
+              children: [{
+                string: `${text}`,
+              }]
+            }]
+          })
+        } else{
+           createNestedBlock(parent, {
+             uid,
+             order: 'last',
+             string: `${text}`,
+           })
+        }
+        
+        
+       
 
         async function insertFile(fileid, generate) {
           let photo = await GET(
