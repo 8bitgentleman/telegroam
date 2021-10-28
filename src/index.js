@@ -101,11 +101,11 @@ runExtension(ID, () => {
                 "The tag each location will be nested under",
             },
             {
-              title: "Voice Tag",
+              title: "Audio Tag",
               type: "text",
               defaultValue: "#Voice",
               description:
-                "The tag each voice recording will be nested under",
+                "The tag each audio recording will be nested under",
             },
             {
               title: "Video Tag",
@@ -671,8 +671,8 @@ runExtension(ID, () => {
             if (message.location)
             // TODO figure out while files are tagged as locations
               mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Location Tag"}) || "#Location"
-            if (message.voice)
-              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Voice Tag"}) || "#Voice"
+            if (message.voice || message.audio)
+              mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Audio Tag"}) || "#Voice"
             if (message.video || message.video_note || message.animation)
               mediaTag = getSettingValueFromTree({tree: mediaTagSettings, key: "Video Tag"}) || "#Video"
             if (message.photo)
@@ -701,7 +701,6 @@ runExtension(ID, () => {
             
           }
           
-
           let tmpuid = createNestedBlock(mediauid, {
             string: `Uploading in progress:: ${message.chat.id} ${fileid}`
           })
@@ -749,6 +748,9 @@ runExtension(ID, () => {
 
         if (message.voice) {
           await insertFile(message.voice.file_id, audio)
+        }
+        if (message.audio) {
+          await insertFile(message.audio.file_id, audio)
         }
 
         if (message.video) {
