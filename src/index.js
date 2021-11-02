@@ -21,11 +21,9 @@ import {
   getSubTree} from "roamjs-components";
 import firebase from "firebase/app";
 import InternalSettingsPanel from "./InternalSettingsPanel";
-import ShortcodeSettingsPanel from "./ShortcodeSettingsPanel";
-
+import { ShortcodeSettingsPanel } from "./ShortcodeSettingsPanel";
+import { DEFAULT_SHORTCODE_VALUES } from "./util";
 import { FocusStyleManager } from "@blueprintjs/core";
-// import the telegroam js here too?
-// import startTelegroam from './telegroam';
 import extractTweet from './_extractTweet';
 
 
@@ -44,6 +42,16 @@ runExtension(ID, () => {
         {
           id: "Telegram Setup",
           fields: [
+            {
+              type: "custom",
+              title: "Tag Custom",
+              description:
+                "Shortcodes and their associated expanded tags",
+              defaultValue: DEFAULT_SHORTCODE_VALUES,
+              options: {
+                component: ShortcodeSettingsPanel,
+              },
+            },
             {
               type: "text",
               title: "API Key",
@@ -153,12 +161,13 @@ runExtension(ID, () => {
               title: "Tag Custom",
               description:
                 "Shortcodes and their associated expanded tags",
+              defaultValue: DEFAULT_SHORTCODE_VALUES,
               options: {
                 component: ShortcodeSettingsPanel,
               },
             },
             {
-              type: "multitext",
+              type: "page",
               title: "Tag Shortcodes",
               description:
                 "Shortcodes and their associated expanded tags",

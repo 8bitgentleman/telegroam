@@ -95,8 +95,19 @@ I will make this more convenient later.
 7. Reload Roam.
 
 ## 🚗 TODO Roadmap <a name = "roadmap"></a>
-- [x] squash that pesky empty `child` bug
+- [ ] create a custom panel for shortcodes
+    - this will be a combination of the multi and  pages component. Left most input is the shortcode and right side can only be filled by pages
+- [ ] support [Readwise esque block formatting shortcodes](https://blog.readwise.io/add-chapters-to-highlights/) (.h1, .h2, .ar (right alight), .al (left alight))
+- [ ] toggle shortcode nesting
+- [ ] ignore capitalization when searching shortcodes
+- [ ] if shortcode doesn't exist make it a tag
+- [ ] support stackable shortcodes .t.d.apt
 
+- [ ] figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message
+- [ ] only print stuff to the console if user has set debug mode to true
+- [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
+
+- [x] squash that pesky empty `child` bug
 - [x] figure out how to correctly import media (I messed this up in the switch to typescript somehow)
 - [x] actually update the attribute variables when they change in the settings panel
 - [x] actually toggle timestamp nesting on/off
@@ -105,17 +116,8 @@ I will make this more convenient later.
 - [x] bring back toggle media tags
 - [x] fix media nesting (right now they nest under a blank block because I cut out mediatags)
 - [x] Support tweet extraction using [this smartblock](https://github.com/dvargas92495/SmartBlocks/issues/216) as inspiration. Extracted text would be the parent with the tweet URL as a child block
-- [ ] support [Readwise esque block formatting shortcodes](https://blog.readwise.io/add-chapters-to-highlights/) (.h1, .h2, .ar (right alight), .al (left alight))
-- [ ] actually toggle shortcode nesting
-- [ ] figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message
+- [x] fix custom panel startup bug where settings blocks are not created on initialization 
 
-- [ ] only print stuff to the console if user has set debug mode to true
-- [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
-- [ ] support stackable shortcodes .t.d.apt
-- [ ] ignore capitalization when searching shortcodes
-- [ ] fix custom panel startup bug where settings blocks are not created on initialization 
-- [ ] create a custom panel for shortcodes
-    - this will be a combination of the multi and  pages component. Left most input is the shortcode and right side can only be filled by pages
 
 # Git and GitHub Style Guide <a name = "style"></a>
 
