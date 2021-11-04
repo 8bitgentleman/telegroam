@@ -269,31 +269,47 @@ runExtension(ID, () => {
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
     // see if there is an actionable tag
     if (isActionable(text)) {
-      var actionableTag = text.split(" ")[0]
+      // var actionableTag = text.split(" ")[0]
       //check if a shortcode is defined
-      if (shortcodes.has(actionableTag)) {
-        // TODO stackable shortcodes .t.d.apt
-        if (typeof shortcodes.get(actionableTag) === 'string') {
-          //replace the shortcode with the actual tag
-          //should decide if we indent or not too
-          // TODO figure out how to indent
-          var regex = new RegExp("^" + actionableTag, "g");
-          text = text.replace(regex, `#[[${shortcodes.get(actionableTag)}]]`);
-        } else if (typeof shortcodes.get(actionableTag) === 'function') {
-          // this replaces the whole message with the tweet, may be problematic later
-          if (shortcodes.get(actionableTag).name === 'extractTweet'){
-            console.log(shortcodes.get(actionableTag).name)
-            text = await shortcodes.get(actionableTag)(text)
-          } else if (shortcodes.get(actionableTag).name === 'textFormatting') {
-            // TODO rethink this - not the best place for formatting the block
-            console.log(textFormatting(text, actionableTag))
-          } else if (shortcodes.get(actionableTag).name === 'tomorrow') {
-            let roamDate = shortcodes.get(actionableTag)()
-            let regex = new RegExp("^" + actionableTag, "g");
-            text = text.replace(regex, `[[${roamDate}]]`);
+      let allActionableTags = text.split(" ")[0]
+      let actionableTagsCharIndex = allActionableTags.length
+      allActionableTags = allActionableTags.split(".")
+      //remove empty 
+      allActionableTags = allActionableTags.filter(n => n)
+
+      for (let i = 0; i < allActionableTags.length; i++) {
+        console.log(text)
+        let actionableTag = "." + allActionableTags[i]   
+        
+        if (shortcodes.has(actionableTag)) {
+          // TODO stackable shortcodes .t.d.apt
+          if (typeof shortcodes.get(actionableTag) === 'string') {
+            //replace the shortcode with the actual tag
+            //should decide if we indent or not too
+            // TODO figure out how to indent
+            var regex = new RegExp("^" + actionableTag, "g");
+            text = text.slice(0, actionableTagsCharIndex) + ` #[[${shortcodes.get(actionableTag)}]]` + text.slice(actionableTagsCharIndex);
+            text = text.replace(regex, ``);
+            actionableTagsCharIndex = actionableTagsCharIndex - actionableTag.length
+          } else if (typeof shortcodes.get(actionableTag) === 'function') {
+            if (shortcodes.get(actionableTag).name === 'extractTweet'){
+              // this replaces the whole message with the tweet, may be problematic later
+              console.log(shortcodes.get(actionableTag).name)
+              text = await shortcodes.get(actionableTag)(text)
+            } else if (shortcodes.get(actionableTag).name === 'textFormatting') {
+              // TODO rethink this - not the best place for formatting the block
+              console.log(textFormatting(text, actionableTag))
+            } else if (shortcodes.get(actionableTag).name === 'tomorrow') {
+              let roamDate = shortcodes.get(actionableTag)()
+              let regex = new RegExp("^" + actionableTag, "g");
+              // text = text.replace(regex, `[[${roamDate}]]`);
+              text = text.slice(0, actionableTagsCharIndex) + ` [[${roamDate}]]` + text.slice(actionableTagsCharIndex);
+              text = text.replace(regex, ``);
+              actionableTagsCharIndex = actionableTagsCharIndex - actionableTag.length
+            }
           }
         }
-      }
+    }
     }
     return  text
     }
