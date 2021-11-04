@@ -25,6 +25,7 @@ import { ShortcodeSettingsPanel } from "./ShortcodeSettingsPanel";
 import { DEFAULT_SHORTCODE_VALUES } from "./util";
 import { FocusStyleManager } from "@blueprintjs/core";
 import extractTweet from './_extractTweet';
+import tomorrow from './_convertDate';
 
 
 const ID = "telegroam";
@@ -215,7 +216,8 @@ runExtension(ID, () => {
   shortcodes.set(".h1", textFormatting);
   shortcodes.set(".a", textFormatting);
   shortcodes.set(".cv", textFormatting);
-
+  // date shortcode
+  shortcodes.set(".tomorrow", tomorrow);
   function getSettingUIDFromTree(tree, key) {
     let node = tree.find((s) => toFlexRegex(key).test(s.text.trim()));
     let uid = node?.children?.[0].uid.trim()
@@ -285,6 +287,10 @@ runExtension(ID, () => {
           } else if (shortcodes.get(actionableTag).name === 'textFormatting') {
             // TODO rethink this - not the best place for formatting the block
             console.log(textFormatting(text, actionableTag))
+          } else if (shortcodes.get(actionableTag).name === 'tomorrow') {
+            let roamDate = shortcodes.get(actionableTag)()
+            let regex = new RegExp("^" + actionableTag, "g");
+            text = text.replace(regex, `[[${roamDate}]]`);
           }
         }
       }
