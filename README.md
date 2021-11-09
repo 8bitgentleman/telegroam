@@ -93,12 +93,13 @@ I will make this more convenient later.
 - [ ] toggle shortcode nesting
 - [ ] ignore capitalization when searching shortcodes
 - [ ] if shortcode doesn't exist make it a tag
-- [ ] support stackable shortcodes .t.d.apt
+- [ ] create a shorthand for the roam `or` syntax ( {{or: OPT_ONE | OPT_TWO | OPT 3 }} )
 
 - [ ] figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message
 - [ ] only print stuff to the console if user has set debug mode to true
 - [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
 
+- [x] support stackable shortcodes .t.d.apt
 - [x] squash that pesky empty `child` bug
 - [x] figure out how to correctly import media (I messed this up in the switch to typescript somehow)
 - [x] actually update the attribute variables when they change in the settings panel
