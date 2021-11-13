@@ -16,21 +16,22 @@
   "bugs": {
     "url": "https://github.com/mbrock/8bitgentleman/issues"
   },
-  "homepage": "https://github.com/8bitgentleman/telegroam#readme",
+  "homepage": "https://github.com/8bitgentleman/telegroam/tree/roam-js#readme",
   "devDependencies": {
-    "@types/react": "^17.0.30",
-    "@types/react-dom": "^17.0.9",
-    "roamjs-scripts": "^0.12.5",
-    "typescript": "^4.4.4"
+    "@types/react": "^17.0.34",
+    "@types/react-dom": "^17.0.11",
+    "roamjs-scripts": "^0.13.0",
+    "typescript": "^4.4.4",
+    "firebase": "^9.4.1",
+    "npm-check-updates": "^12.0.2"
   },
   "dependencies": {
-    "@blueprintjs/core": "^3.51.1",
-    "@blueprintjs/select": "^3.18.8",
+    "@blueprintjs/core": "^3.51.3",
+    "@blueprintjs/select": "^3.18.10",
     "cors-anywhere": "^0.4.4",
-    "firebase": "^8.8.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "roam-client": "^1.92.2",
-    "roamjs-components": "^0.25.7"
+    "roam-client": "^1.94.4",
+    "roamjs-components": "^0.26.18"
   }
 }

@@ -15,23 +15,23 @@ import {
 //   shortcodes.set(".a", textFormatting);
 //   shortcodes.set(".cv", textFormatting);
 
-  // export const DEFAULT_SHORTCODE_VALUES: InputTextNode[] = [
-  //   {
-  //     uid: "_d&d-shortcode",
-  //     text: ".d",
-  //     children: [{ text: "D&D" }],
-  //   },
-  //   {
-  //     uid: "_apt-shortcode",
-  //     text: ".apt",
-  //     children: [{ text: "moving apartments" }],
-  //   },
-  //   {
-  //     uid: "_tomorrow-shortcode",
-  //     text: ".tomorrow",
-  //     children: [{ text: "function" },],
-  //   },
-  // ];
+  export const DEFAULT_SHORTCODE_VALUES: InputTextNode[] = [
+    {
+      uid: "_d&d-shortcode",
+      text: ".d",
+      children: [{ text: "D&D" }],
+    },
+    {
+      uid: "_apt-shortcode",
+      text: ".apt",
+      children: [{ text: "moving apartments" }],
+    },
+    {
+      uid: "_tomorrow-shortcode",
+      text: ".tomorrow",
+      children: [{ text: "function" },],
+    },
+  ];
   // export const getShortcodes = () =>
   // (
   //   (

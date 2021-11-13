@@ -17,6 +17,7 @@ import {
     getTreeByBlockUid,
     TreeNode,
 } from "roam-client";
+import { PageInput } from "roamjs-components";
 import { Panel } from "./util";
 
 
@@ -33,27 +34,28 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
   );
   const [shortcode, setShortcode] = useState("");
   const [expandedPage, setExpandedPage] = useState("");
+
   return (
     <>
       <div style={{ display: "flex", marginBottom: 8 }}>
-        <Label className={"roamjs-discourse-config-format"}>
+        <Label className={"roamjs-telegram-config-format"}>
           Shortcode
           <InputGroup
             value={shortcode}
             onChange={(e) => setShortcode(e.target.value)}
             style={{ flexGrow: .5, paddingRight: 8 }}
-            placeholder={`Shortcode to be expanded into a full tag. Starts with "." `}
+            placeholder={`Shortcode to be expanded into a full tag. Starts with ".", no spaces `}
           />
         </Label>
         <Label>
           Expanded Page
-          <InputGroup
+          <PageInput 
             value={expandedPage}
-            onChange={(e) =>
-              setExpandedPage(e.target.value)
+            setValue={(e) =>
+              setExpandedPage(e)
             }
-            style={{ flexGrow: .5 }}
-          />
+            extra={["{all}"]} 
+            />
         </Label>
       </div>
       <Button
@@ -62,6 +64,7 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
         rightIcon={"plus"}
         minimal
         style={{ marginBottom: 8 }}
+        // need to catch errors in the shortcode somehow (should start with a "." and not include space)
         disabled={!shortcode || !expandedPage}
         onClick={() => {
           const valueUid = createBlock({

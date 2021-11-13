@@ -19,7 +19,7 @@ import {
   getSettingValueFromTree,
   toFlexRegex,
   getSubTree} from "roamjs-components";
-import firebase from "firebase/app";
+// import firebase from "firebase/app";
 import InternalSettingsPanel from "./InternalSettingsPanel";
 import { ShortcodeSettingsPanel } from "./ShortcodeSettingsPanel";
 import { DEFAULT_SHORTCODE_VALUES } from "./util";
@@ -166,12 +166,6 @@ runExtension(ID, () => {
               options: {
                 component: ShortcodeSettingsPanel,
               },
-            },
-            {
-              type: "page",
-              title: "Tag Shortcodes",
-              description:
-                "Shortcodes and their associated expanded tags",
             },
           ],
 
