@@ -44,16 +44,6 @@ runExtension(ID, () => {
           id: "Telegram Setup",
           fields: [
             {
-              type: "custom",
-              title: "Tag Custom",
-              description:
-                "Shortcodes and their associated expanded tags",
-              defaultValue: DEFAULT_SHORTCODE_VALUES,
-              options: {
-                component: ShortcodeSettingsPanel,
-              },
-            },
-            {
               type: "text",
               title: "API Key",
               description:
@@ -78,7 +68,7 @@ runExtension(ID, () => {
           ],
         },
         {
-          id: "Script Settings",
+          id: "Message Metadata",
           fields: [
             {
               title: "Timestamp nesting",
@@ -141,15 +131,25 @@ runExtension(ID, () => {
 
         },
         {
-          id: "Inline Tagging",
+          id: "Inline Transformations",
           toggleable: true,
           fields: [
+            {
+              type: "custom",
+              title: "Tag Shortcodes",
+              description:
+                "Shortcodes and their associated expanded tags",
+              defaultValue: DEFAULT_SHORTCODE_VALUES,
+              options: {
+                component: ShortcodeSettingsPanel,
+              },
+            },
             {
               title: "Tag nesting",
               type: "flag",
               defaultValue: false,
               description:
-                "If checked and if an inline tag is identified, the message will be nested under said tag",
+                "NOT WORKING: If checked and if an inline tag is identified, the message will be nested under said tag",
             },
             {
               title: "Tag stacking",
@@ -158,14 +158,11 @@ runExtension(ID, () => {
               description: "NOT WORKING: If checked allows inline tags to be stacked (eg .h1.al)",
             },
             {
-              type: "custom",
-              title: "Tag Custom",
+              type: "text",
+              title: "Multiblock Divider",
               description:
-                "Shortcodes and their associated expanded tags",
-              defaultValue: DEFAULT_SHORTCODE_VALUES,
-              options: {
-                component: ShortcodeSettingsPanel,
-              },
+                "NOT WORKING: If enabled messages the include this character will be split into multiple block",
+              defaultValue: ">",
             },
           ],
 
