@@ -623,7 +623,7 @@ runExtension(ID, () => {
         }
         
         let scriptSettings = getBasicTreeByParentUid(
-          getSubTree({tree, key: "Script Settings"}).uid);
+          getSubTree({tree, key: "Message Metadata"}).uid);
         let timestampNesting = scriptSettings.some((t) =>
           toFlexRegex("Timestamp nesting").test(t.text)
         );
