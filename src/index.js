@@ -65,7 +65,7 @@ runExtension(ID, () => {
               options: {
                 items: ["FIRST", "LAST"],
               },
-              defaultValue: "NONE",
+              defaultValue: "FIRST",
             },
             {
               type: "text",
