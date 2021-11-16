@@ -58,6 +58,16 @@ runExtension(ID, () => {
               defaultValue: "#inbox",
             },
             {
+              title: "Inbox Location",
+              type: "select",
+              description:
+                "Options for the location of the inbox tag on the daily notes page",
+              options: {
+                items: ["FIRST", "LAST"],
+              },
+              defaultValue: "NONE",
+            },
+            {
               type: "text",
               title: "Trusted Media Proxy",
               description:
@@ -411,6 +421,13 @@ runExtension(ID, () => {
 
     let maxOrder = findMaxOrder(inboxUid)
       // inbox location
+    // let inboxLocation = getBasicTreeByParentUid(
+    //   getSubTree({tree, key: "Inbox Location"}).uid) || 0;
+    let inboxLocation  = getSettingValueFromTree({
+      tree: tree, 
+      key: "Inbox Location"}) || 0;
+    debugger
+
     if (updateResponse.result.length) {
       if (inboxUids.length) {
         inboxUid = inboxUids[0]
@@ -639,6 +656,7 @@ runExtension(ID, () => {
           tree: scriptSettings, 
           key: "Sender Location",
         }) || "NONE";
+        
         console.log("Timestamp Location: " + timestampLocation, "Sender Location: " + senderLocation)
         // TODO text formatting
         // check for Timestamp Location here
@@ -715,9 +733,6 @@ runExtension(ID, () => {
                 string: `${text}`,
             })
         }
-        
-        
-       
 
         async function insertFile(fileid, generate) {
           let photo = await GET(
