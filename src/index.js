@@ -69,21 +69,27 @@ runExtension(ID, () => {
         },
         {
           id: "Message Metadata",
-          fields: [
+          fields: [            
             {
-              title: "Timestamp nesting",
-              type: "flag",
-              defaultValue: false,
+              title: "Timestamp Location",
+              type: "select",
               description:
-                "If checked, blocks will be nested under a block denoting the time they were sent",
+              "Options for the location of the time the telegram message was sent",
+              options: {
+                items: ["NONE", "INLINE", "NESTED"],
+              },
+              defaultValue: "NONE",
             },
             {
-              title: "Sender nesting",
-              type: "flag",
-              defaultValue: false,
+              title: "Sender Location",
+              type: "select",
               description:
-                "If checked, blocks will nested under the telegram name of the sender",
-            },
+              "Options for the location of the telegram message sender name",
+              options: {
+                items: ["NONE", "INLINE", "NESTED"],
+              },
+              defaultValue: "NONE",
+            },          
           ],
         },
         {
@@ -404,7 +410,7 @@ runExtension(ID, () => {
 
 
     let maxOrder = findMaxOrder(inboxUid)
-
+      // inbox location
     if (updateResponse.result.length) {
       if (inboxUids.length) {
         inboxUid = inboxUids[0]
@@ -624,52 +630,90 @@ runExtension(ID, () => {
         
         let scriptSettings = getBasicTreeByParentUid(
           getSubTree({tree, key: "Message Metadata"}).uid);
-        let timestampNesting = scriptSettings.some((t) =>
-          toFlexRegex("Timestamp nesting").test(t.text)
-        );
-        let senderNesting = scriptSettings.some((t) =>
-          toFlexRegex("Sender nesting").test(t.text)
-        );
-        console.log(timestampNesting, senderNesting)
+        
+        let timestampLocation  = getSettingValueFromTree({
+          tree: scriptSettings, 
+          key: "Timestamp Location"}) || "NONE"
+
+        let senderLocation = getSettingValueFromTree({
+          tree: scriptSettings, 
+          key: "Sender Location",
+        }) || "NONE";
+        console.log("Timestamp Location: " + timestampLocation, "Sender Location: " + senderLocation)
         // TODO text formatting
-        // check for timestamp nesting here
-        if (timestampNesting && !senderNesting) {
-            createNestedBlock(parent, {
+        // check for Timestamp Location here
+        if (timestampLocation== 'NESTED' && senderLocation == 'NONE') {
+          createNestedBlock(parent, {
               uid,
               order: 'last',
               string: `${hhmm}`,
               children: [{
-                string: `${text}`,
-              }]
-            })
-        } else if (!timestampNesting && senderNesting) {
-          createNestedBlock(parent, {
-            uid,
-            order: 'last',
-            string: `[[${name}]]`,
-            children: [{
               string: `${text}`,
-            }]
-          })
-
-        } else if (timestampNesting && senderNesting) {
-          createNestedBlock(parent, {
-            uid,
-            order: 'last',
-            string: `${hhmm}`,
-            children: [{
-              string: `[[${name}]]`,
-              children: [{
-                string: `${text}`,
               }]
-            }]
           })
+        } else if (timestampLocation== 'NESTED' && senderLocation == 'INLINE') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `${hhmm}`,
+                children: [{
+                string: `[[${name}]]: ${text}`,
+                }]
+            })
+        } else if (timestampLocation== 'NESTED' && senderLocation == 'NESTED') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `${hhmm}`,
+                children: [{
+                    string: `[[${name}]]`,
+                    children: [{
+                    string: `${text}`,
+                    }]
+                }]
+            })
+        } else if (timestampLocation== 'INLINE' && senderLocation == 'NONE') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `${hhmm}: ${text}`,
+            })
+        } else if (timestampLocation== 'INLINE' && senderLocation == 'INLINE') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `[[${name}]] at ${hhmm}: ${text}`,
+            })
+        } else if (timestampLocation== 'INLINE' && senderLocation == 'NESTED') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `[[${name}]]`,
+                children: [{
+                string: `${hhmm}: ${text}`,
+                }]
+            })
+        } else if (timestampLocation== 'NONE' && senderLocation == 'INLINE') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `[[${name}]]: ${text}`,
+            })
+        } else if (timestampLocation== 'NONE' && senderLocation == 'NESTED') {
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `[[${name}]]`,
+                children: [{
+                string: `${text}`,
+                }]
+            })
         } else{
-           createNestedBlock(parent, {
-             uid,
-             order: 'last',
-             string: `${text}`,
-           })
+            createNestedBlock(parent, {
+                uid,
+                order: 'last',
+                string: `${text}`,
+            })
         }
         
         
