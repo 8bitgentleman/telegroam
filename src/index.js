@@ -61,7 +61,7 @@ runExtension(ID, () => {
               title: "Inbox Location",
               type: "select",
               description:
-                "Options for the location of the inbox tag on the daily notes page",
+                "NOT WORKING: Options for the location of the inbox tag on the daily notes page",
               options: {
                 items: ["FIRST", "LAST"],
               },
@@ -171,7 +171,7 @@ runExtension(ID, () => {
               title: "Tag stacking",
               type: "flag",
               defaultValue: false,
-              description: "NOT WORKING: If checked allows inline tags to be stacked (eg .h1.al)",
+              description: "PARTIALLY WORKING: If checked allows inline tags to be stacked (eg .h1.al)",
             },
             {
               type: "text",

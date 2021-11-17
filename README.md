@@ -13,11 +13,11 @@
 
 ## 🚀 New Features <a name = "features"></a>
 - **Fix:** Only adds a single inbox tag when needed instead of automatically every day
-- **Fix:** Makes  contriversial design options optional (media tags)
+- **Fix:** Makes contriversial design options optional (media tags)
 - **Fix:** Correctly upload videos
-- **Feat:** Adds in the concept of actionable inline tag shortcodes (ala [Readwise](https://blog.readwise.io/tag-your-highlights-while-you-read/))
+- **Feat:** Adds in the concept of actionable inline tag shortcodes (ala [Readwise](https://blog.readwise.io/tag-your-highlights-while-you-read/)). Shortcodes start with `.` and are expanded into longer page names
 - **Feat:** automatic tweet extraction, inspired by [Fabrice Gallet's Tweet Extactor](https://twitter.com/fbgallet/status/1440709705484038162)
-- **Coming:** Now customize nearly everything with [@david Vargas's roamjs settings panel](https://github.com/dvargas92495/roamjs-components)
+- **Feat:** Now customize nearly everything with [@david Vargas's roamjs settings panel](https://github.com/dvargas92495/roamjs-components)
 - **Coming:** multiblock support with customizable tag, modified from [Calhistorian's telegroam fork](https://github.com/Calhistorian/RoamanCircus)
 
 ## ⚠️ Warning!
@@ -87,18 +87,22 @@ I will make this more convenient later.
 7. Reload Roam.
 
 ## 🚗 TODO Roadmap <a name = "roadmap"></a>
-- [ ] create a custom panel for shortcodes
-    - this will be a combination of the multi and  pages component. Left most input is the shortcode and right side can only be filled by pages
+
+- [ ] make initial setup simpler. Right now the block structure sometimes needs to be added manually and there is no documentation for that
 - [ ] support [Readwise esque block formatting shortcodes](https://blog.readwise.io/add-chapters-to-highlights/) (.h1, .h2, .ar (right alight), .al (left alight))
 - [ ] toggle shortcode nesting
 - [ ] ignore capitalization when searching shortcodes
 - [ ] if shortcode doesn't exist make it a tag
 - [ ] create a shorthand for the roam `or` syntax ( {{or: OPT_ONE | OPT_TWO | OPT 3 }} )
-
-- [ ] figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message
+- [ ] make the location of the inbox tag customizable (top or bottom of the Daily Notes)
 - [ ] only print stuff to the console if user has set debug mode to true
-- [ ] create a github repo pages site so the script can be hosted (not yet feasable since roam-client compiles)
+- [ ] create a github action that automates compliling of the script with roam-client on release
+- [ ] fix `.t TWEET_URL` tweet extraction
 
+- [x] create a custom panel for shortcodes
+    - this will be a combination of the multi and  pages component. Left most input is the shortcode and right side can only be filled by pages
+- [x] ~~figure out how to simulate a 'thread' ie multiple messages that are all indented under the same parent message~~ Already a feature of Telegroam that I somehow missed!
+- [x] create a github repo pages site so the script can be hosted 
 - [x] support stackable shortcodes .t.d.apt
 - [x] squash that pesky empty `child` bug
 - [x] figure out how to correctly import media (I messed this up in the switch to typescript somehow)
