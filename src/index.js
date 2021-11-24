@@ -48,7 +48,7 @@ runExtension(ID, () => {
               title: "API Key",
               description:
                 "Your custom Telegram Bot API key. Refresh page after update.",
-              // defaultValue: "xx",
+              defaultValue: "xx",
             },
             {
               type: "text",
@@ -148,7 +148,6 @@ runExtension(ID, () => {
         },
         {
           id: "Inline Transformations",
-          toggleable: true,
           fields: [
             {
               type: "custom",
@@ -426,7 +425,6 @@ runExtension(ID, () => {
     let inboxLocation  = getSettingValueFromTree({
       tree: tree, 
       key: "Inbox Location"}) || 0;
-    debugger
 
     if (updateResponse.result.length) {
       if (inboxUids.length) {

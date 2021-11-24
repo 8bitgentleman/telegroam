@@ -1,7 +1,11 @@
 import {
     InputTextNode,
+    RoamBasicNode,
+
   } from "roam-client";
-  
+  import { getSettingValueFromTree, toFlexRegex } from "roamjs-components";
+  let treeRef: { tree: RoamBasicNode[] } = { tree: [] };
+
   export type Panel = (props: {
     uid: string;
     parentUid: string;
@@ -29,19 +33,22 @@ import {
     {
       uid: "_tomorrow-shortcode",
       text: ".tomorrow",
-      children: [{ text: "function" },],
+      children: [
+        { text: "tomorrow",
+        children: [
+          { text: "function" },] },],
     },
   ];
-  // export const getShortcodes = () =>
-  // (
-  //   (
-  //     treeRef.tree.find((t) => toFlexRegex("grammar").test(t.text))?.children ||
-  //     []
-  //   ).find((t) => toFlexRegex("nodes").test(t.text))?.children ||
-  //   DEFAULT_NODE_VALUES
-  // ).map((n: InputTextNode) => ({
-  //   format: n.text,
-  //   text: n.children[0]?.text || "",
-  //   shortcut: n.children[1]?.text || "",
-  //   type: n.uid,
-  // }));
+  export const getShortcodes = () =>
+  (
+    (
+      treeRef.tree.find((t) => toFlexRegex("Inline Transformations").test(t.text))?.children ||
+      []
+    ).find((t) => toFlexRegex("Tag Shortcodes").test(t.text))?.children ||
+    DEFAULT_SHORTCODE_VALUES
+  ).map((n: InputTextNode) => ({
+    shortcode: n.text,
+    expandedText: n.children[0]?.text || "",
+    shortcodeType: n.children[0]?.text || "text",
+    type: n.uid,
+  }));

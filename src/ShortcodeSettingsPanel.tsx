@@ -28,12 +28,14 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
       ? getBasicTreeByParentUid(uid).map((n) => ({
           shortcode: n.text,
           uid: n.uid,
-          expandedPage: n.children?.[1]?.text,
+          expandedPage: n.children?.[0]?.text,
+          shortcodeType: n.children?.[0]?.children[0]?.text || "text",
         }))
       : []
   );
   const [shortcode, setShortcode] = useState("");
   const [expandedPage, setExpandedPage] = useState("");
+  const [shortcodeType, setShortcodeType] = useState("text");
 
   return (
     <>
@@ -79,6 +81,7 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
             setNodes([...nodes, { shortcode, uid: valueUid, expandedPage }]);
             setShortcode("");
             setExpandedPage("");
+            setShortcodeType("text");
           }, 1);
         }}
       />
@@ -106,6 +109,9 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
                 </span>
                 <span>
                   <b>Expanded Page: </b> {n.expandedPage}
+                </span>
+                <span>
+                  <b>Type: </b> {n.shortcodeType  || "text"}
                 </span>
                 <Button
                   icon={"trash"}
