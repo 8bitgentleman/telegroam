@@ -269,9 +269,38 @@ runExtension(ID, () => {
     return [heading, childrenViewType, textAlign]
    }
 
-  async function massage(text) {
+  async function massage(text, markdown=false) {
     // dont' love this approach seems like it needs to be smarter
-    // see if there is a thread
+
+    // look for markdown stylling first since it is char based
+    // TODO not sure how to handle this yet since stylling can overlap in telegram in ways that roam doesn't parse well
+    if (markdown){
+      for (let i = 0; i < markdown.length; i++) {
+        console.log(markdown[i])
+        let md_length = markdown[i]['length']
+        let md_offset = markdown[i]['offset']
+        if (markdown[i]['type']== 'bold'){
+
+        }
+        if (markdown[i]['type']== 'italic'){
+          
+        }
+        if (markdown[i]['type']== 'code'){
+
+        }
+        if (markdown[i]['type']== 'text_link'){
+          let link_url = markdown[i]['url']
+          
+        }
+        if (markdown[i]['type']== 'underline'){
+
+        }
+        if (markdown[i]['type']== 'strikethrough'){
+          
+        }
+      }
+    }
+
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
     // see if there is an actionable tag
     if (isActionable(text)) {
@@ -617,7 +646,8 @@ runExtension(ID, () => {
       async function handleMessage() {
         let name = message.from ? message.from.first_name : null
         let hhmm = formatTime(message.date)
-        let text = await massage(message.text || "")
+        let markdown = message.entities || false
+        let text = await massage(message.text || "", markdown)
 
         let uid = `telegram-${message.chat.id}-${message.message_id}`
 

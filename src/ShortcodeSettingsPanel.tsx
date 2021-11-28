@@ -78,7 +78,7 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
             },
           });
           setTimeout(() => {
-            setNodes([...nodes, { shortcode, uid: valueUid, expandedPage }]);
+            setNodes([...nodes, { shortcode, uid: valueUid, expandedPage, shortcodeType } ] );
             setShortcode("");
             setExpandedPage("");
             setShortcodeType("text");
