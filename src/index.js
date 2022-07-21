@@ -12,7 +12,8 @@ import {
   getPageTitleByPageUid, 
   getFirstChildUidByBlockUid,
   getBasicTreeByParentUid,
-  getPageUidByPageTitle
+  getPageUidByPageTitle,
+  RoamBasicNode
    } from "roam-client";
 import { 
   createConfigObserver,
@@ -26,6 +27,7 @@ import { DEFAULT_SHORTCODE_VALUES } from "./util";
 import { FocusStyleManager } from "@blueprintjs/core";
 import extractTweet from './_extractTweet';
 import tomorrow from './_convertDate';
+import { getShortcodes } from "./util";
 
 
 const ID = "telegroam";
@@ -300,10 +302,16 @@ runExtension(ID, () => {
         }
       }
     }
+    // console.log(treeRef.tree.find((t) => toFlexRegex("Inline Transformations").test(t.text))?.children)
+    let nodes = getShortcodes()
+    let treeRef = { tree: [] };
+    let sh = treeRef.tree.find((t) => toFlexRegex("Inline Transformations").test(t.text))?.children
 
+    debugger
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
     // see if there is an actionable tag
     if (isActionable(text)) {
+
       // var actionableTag = text.split(" ")[0]
       //check if a shortcode is defined
       let allActionableTags = text.split(" ")[0]
@@ -313,10 +321,11 @@ runExtension(ID, () => {
       allActionableTags = allActionableTags.filter(n => n)
 
       for (let i = 0; i < allActionableTags.length; i++) {
-        console.log(text)
+
         let actionableTag = "." + allActionableTags[i]   
-        
         if (shortcodes.has(actionableTag)) {
+          // debugger
+
           // TODO stackable shortcodes .t.d.apt
           if (typeof shortcodes.get(actionableTag) === 'string') {
             //replace the shortcode with the actual tag
@@ -685,7 +694,7 @@ runExtension(ID, () => {
           key: "Sender Location",
         }) || "NONE";
         
-        console.log("Timestamp Location: " + timestampLocation, "Sender Location: " + senderLocation)
+        // console.log("Timestamp Location: " + timestampLocation, "Sender Location: " + senderLocation)
         // TODO text formatting
         // check for Timestamp Location here
         if (timestampLocation== 'NESTED' && senderLocation == 'NONE') {

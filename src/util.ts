@@ -49,6 +49,6 @@ import {
   ).map((n: InputTextNode) => ({
     shortcode: n.text,
     expandedText: n.children[0]?.text || "",
-    shortcodeType: n.children[0]?.text || "text",
+    // shortcodeType: n.children?.[0]?.children[0]?.text || "text" ,
     type: n.uid,
   }));

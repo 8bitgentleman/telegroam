@@ -29,13 +29,12 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
           shortcode: n.text,
           uid: n.uid,
           expandedPage: n.children?.[0]?.text,
-          shortcodeType: n.children?.[0]?.children[0]?.text || "text",
         }))
       : []
   );
   const [shortcode, setShortcode] = useState("");
   const [expandedPage, setExpandedPage] = useState("");
-  const [shortcodeType, setShortcodeType] = useState("text");
+  // const [shortcodeType, setShortcodeType] = useState("text");
 
   return (
     <>
@@ -78,10 +77,10 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
             },
           });
           setTimeout(() => {
-            setNodes([...nodes, { shortcode, uid: valueUid, expandedPage, shortcodeType } ] );
+            setNodes([...nodes, { shortcode, uid: valueUid, expandedPage } ] );
             setShortcode("");
             setExpandedPage("");
-            setShortcodeType("text");
+            // setShortcodeType("text");
           }, 1);
         }}
       />
@@ -111,7 +110,7 @@ export const ShortcodeSettingsPanel: Panel = ({ uid }) => {
                   <b>Expanded Page: </b> {n.expandedPage}
                 </span>
                 <span>
-                  <b>Type: </b> {n.shortcodeType  || "text"}
+                  {/* <b>Type: </b> {n.shortcodeType  || "text"} */}
                 </span>
                 <Button
                   icon={"trash"}
