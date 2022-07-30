@@ -4,7 +4,6 @@
 *
 * See the LICENSE file (MIT).
 */
-var updateContinuously = true
 
 function massage(text) {
     text = text.replace(/\bTODO\b/ig, "{{[[TODO]]}}")
@@ -319,55 +318,49 @@ async function updateFromTelegram() {
         order: 'last',
         string: `${text}`,
         })
-        
-        async function getFirebaseURL(imageBlob){
-            // upload file to firebase
-            // promises make so little sense sometimes...
-            let upFile = async function(imageBlob) {
-                return roamAlphaAPI.util.uploadFile(
-                    {file: new File([imageBlob], "image")})
-                    .then(token => { console.log("token", token); return token })
-            }
-        
-            return await upFile(imageBlob)
-                .then(function(result) {
-                return result;
-            })
-        }
+
         async function insertFile(fileid, generate) {
-            let photo = await GET(
-                `getFile?chat_id=${message.chat.id}&file_id=${fileid}`)
-            let path = photo.result.file_path
-            let url = `https://api.telegram.org/file/bot${telegramApiKey}/${path}`
-            
-            let mediauid = createNestedBlock(uid, {
-                string: generate(url)
-            })
+        let photo = await GET(
+            `getFile?chat_id=${message.chat.id}&file_id=${fileid}`)
+        let path = photo.result.file_path
+        let url = `https://api.telegram.org/file/bot${telegramApiKey}/${path}`
+        //console.log(url, generate(url));
 
-            let tmpuid = createNestedBlock(mediauid, {
-                string: `Uploading in progress:: ${message.chat.id} ${fileid}`
-            })
+        let mediauid = createNestedBlock(uid, {
+            string: generate(url)
+        })
 
-            //console.log("fetching", url, "from proxy")
-            let blobResponse = await fetch(
-                `${corsProxyUrl}/${url}`
-            )
+        let tmpuid = createNestedBlock(mediauid, {
+            string: `Uploading in progress:: ${message.chat.id} ${fileid}`
+        })
 
-            let blob = await blobResponse.blob()
-            console.log(blob)
-            // TODO fix this for different file/blob types...
-            roamAlphaAPI.updateBlock({
-                block: {
-                uid: mediauid,
-                string: `![](${await getFirebaseURL(blob)})`
-                }
-            })
+        //console.log("fetching", url, "from proxy")
+        let blobResponse = await fetch(
+            `${corsProxyUrl}/${url}`
+        )
 
-            roamAlphaAPI.deleteBlock({
-                block: {
-                uid: tmpuid
-                }
-            })
+        let blob = await blobResponse.blob()
+
+        let ref = firebase.storage().ref().child(
+            `imgs/app/${graphName()}/${mediauid}`
+        )
+
+        //console.log("uploading", url, "to Roam Firebase")
+        let result = await ref.put(blob)
+        let firebaseUrl = await ref.getDownloadURL()
+
+        roamAlphaAPI.updateBlock({
+            block: {
+            uid: mediauid,
+            string: generate(firebaseUrl)
+            }
+        })
+
+        roamAlphaAPI.deleteBlock({
+            block: {
+            uid: tmpuid
+            }
+        })
         }
 
         let photo = url => `![photo](${url})`
@@ -562,81 +555,93 @@ async function runWithMutualExclusionLock({ waitSeconds, action }) {
     let releasePath = `${lockPath}/release`
 
     for (;;) {
-        let result =
-            await fetch(acquirePath, { method: "POST" })
+    let result =
+        await fetch(acquirePath, { method: "POST" })
 
-        if (result.status === lockStatus.ok) {
-            currentLockPath = lockPath
+    if (result.status === lockStatus.ok) {
+        currentLockPath = lockPath
 
-            try {
-            return await action()
-            } finally {
-            // console.log("telegroam: releasing lock")
-            currentLockPath = null
-            try {
-                await fetch(releasePath, { method: "POST" })
-            } catch (e) {
-                console.error(e)
-                throw e
-            }
-            }
-
-        } else if (result.status === lockStatus.busy) {
-            // console.log(`telegroam: lock busy; waiting ${waitSeconds}s`)
-            await sleep(waitSeconds)
+        try {
+        return await action()
+        } finally {
+        // console.log("telegroam: releasing lock")
+        currentLockPath = null
+        try {
+            await fetch(releasePath, { method: "POST" })
+        } catch (e) {
+            console.error(e)
+            throw e
         }
+        }
+
+    } else if (result.status === lockStatus.busy) {
+        // console.log(`telegroam: lock busy; waiting ${waitSeconds}s`)
+        await sleep(waitSeconds)
+    }
     }
 }
 
 async function updateFromTelegramContinuously() {
     for (;;) {
-        if (updateContinuously==false){
-            console.log("breaking")
-            break 
-        } else {
-            try {
-                let result = await runWithMutualExclusionLock({
-                waitSeconds: 30,
-                action: async () => {
-                    // console.log("telegroam: lock acquired; fetching messages")
-                    return await updateFromTelegram()
-                }
-                })
+    try {
+        let result = await runWithMutualExclusionLock({
+        waitSeconds: 30,
+        action: async () => {
+            // console.log("telegroam: lock acquired; fetching messages")
+            return await updateFromTelegram()
+        }
+        })
 
-            } catch (e) {
-                console.error(e)
-                // console.log("telegroam: ignoring error; retrying in 30s")
-                if (currentLockPath) {
-                // console.log("telegroam: releasing lock via beacon")
-                navigator.sendBeacon(currentLockPath + "/release")
-                }
-                await sleep(30)
-            }
-    }}
+    } catch (e) {
+        console.error(e)
+        // console.log("telegroam: ignoring error; retrying in 30s")
+        if (currentLockPath) {
+        // console.log("telegroam: releasing lock via beacon")
+        navigator.sendBeacon(currentLockPath + "/release")
+        }
+        await sleep(30)
+    }
+    }
 }
 
 function graphName() {
     return document.location.hash.split("/")[2]
 }
 
-async function onload({extensionAPI}) {
-    // set defaults if they dont' exist
-    // if (!extensionAPI.settings.get('data')) {
-    //     await extensionAPI.settings.set('data', "01");
-    // }
-    // extensionAPI.settings.panel.create(panelConfig);
+async function startTelegroam() {
+    // We need to use the Firebase SDK, which Roam already uses, but
+    // Roam uses it via Clojure or whatever, so we import the SDK
+    // JavaScript ourselves from their CDN...
 
-    console.log("load telegroam plugin");
+    if (document.querySelector("#firebase-script")) {
+    okay()
+    } else {
+    let script = document.createElement("SCRIPT")
+    script.id = "firebase-script"
+    script.src = "https://www.gstatic.com/firebasejs/8.4.1/firebase.js"
+    script.onload = okay
+    document.body.appendChild(script)
+    }
+
+    async function okay() {
+    if (firebase.apps.length == 0) {
+
+        // This is Roam's Firebase configuration stuff.
+        // I hope they don't change it.
+        let firebaseConfig = {
+        apiKey: "AIzaSyDEtDZa7Sikv7_-dFoh9N5EuEmGJqhyK9g",
+        authDomain: "app.roamresearch.com",
+        databaseURL: "https://firescript-577a2.firebaseio.com",
+        storageBucket: "firescript-577a2.appspot.com",
+        }
+
+        firebase.initializeApp(firebaseConfig)
+    }
+
     updateFromTelegramContinuously()
+    }
 }
 
-function onunload() {
-    updateContinuously = false;
-    console.log("unload telegroam plugin");
-    
-}
-  
-export default {
-onload,
-onunload
-};
+startTelegroam()
+
+
