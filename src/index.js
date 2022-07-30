@@ -315,9 +315,9 @@ async function updateFromTelegram() {
     //     }]
     //   })
         createNestedBlock(parent, {
-        uid,
-        order: 'last',
-        string: `${text}`,
+            uid,
+            order: 'last',
+            string: `${text}`,
         })
         
         async function getFirebaseURL(imageBlob){
@@ -359,7 +359,7 @@ async function updateFromTelegram() {
             roamAlphaAPI.updateBlock({
                 block: {
                 uid: mediauid,
-                string: `![](${await getFirebaseURL(blob)})`
+                string: generate(await getFirebaseURL(blob))
                 }
             })
 
@@ -373,7 +373,7 @@ async function updateFromTelegram() {
         let photo = url => `![photo](${url})`
         let audio = url => `{{[[audio]]:${url}}}`
         let video = url => `:hiccup[:video {:height "520", :controls true :src "${url}"}]`
-
+        
         if (message.sticker) {
         if (message.sticker.is_animated)
             await insertFile(message.sticker.thumb.file_id, photo)
