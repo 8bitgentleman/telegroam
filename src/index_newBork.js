@@ -108,6 +108,7 @@ function unlinkify(s) {
 
 async function updateFromTelegram(extensionAPI) {
   let telegramApiKey = extensionAPI.settings.get('api-key');
+
   let corsProxyUrl =
     stripTrailingSlash(
       unlinkify(
@@ -121,8 +122,11 @@ async function updateFromTelegram(extensionAPI) {
   let updateBlockValue = extensionAPI.settings.get('update-id');
 
   let updateIdBlock = extensionAPI.settings.get('update-id');
-
-  if (updateIdBlock.match(/^\d+$/)) {
+    
+  // if (updateIdBlock.match(/^\d+$/)) {
+  //   updateId = +updateIdBlock + 1
+  // }
+  if (typeof updateIdBlock === 'string') {
     updateId = +updateIdBlock + 1
   }
 
@@ -242,7 +246,7 @@ async function updateFromTelegram(extensionAPI) {
       edited_message,
       poll
     } = result
-    console.log(result)
+    // console.log(result)
     if (poll) {
       handlePollCreation()
     }
@@ -834,9 +838,6 @@ async function startTelegroam(extensionAPI) {
   }
 }
 
-
-
-
 async function onload({extensionAPI}) {
   console.log("load telegroam plugin")
   // set default setting
@@ -912,10 +913,10 @@ async function onload({extensionAPI}) {
           name:   "Shortcodes",
           action: {type:     "reactComponent",
                   component: shortcodeComponent}},
-        {id:     "update-id",
-          name:   "Update ID",
-          action: {type:     "reactComponent",
-                  component: wrappedUpdateID}}
+        // {id:     "update-id",
+        //   name:   "Update ID",
+        //   action: {type:     "reactComponent",
+        //           component: wrappedUpdateID}}
     ]
   };
   extensionAPI.settings.panel.create(panelConfig);

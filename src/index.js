@@ -25,12 +25,12 @@ function findBotAttribute(name) {
     ]`)
 
     if (!x.length) {
-    throw new Error(`attribute ${name} missing from [[${BOT_PAGE_NAME}]]`)
+        throw new Error(`attribute ${name} missing from [[${BOT_PAGE_NAME}]]`)
     }
 
     return {
-    uid: x[0][0].uid,
-    value: x[0][0].string.split("::")[1].trim(),
+        uid: x[0][0].uid,
+        value: x[0][0].string.split("::")[1].trim(),
     }
 }
 
@@ -65,9 +65,10 @@ let telegramApiKey = findBotAttribute("API Key").value
 
 function unlinkify(s) {
     if (s.match(/^\[.*?\]\((.*?)\)$/)) {
-    return RegExp.$1
+        console.log("s1", RegExp.$1)
+        return RegExp.$1
     } else {
-    return s
+        return s
     }
 }
 
@@ -588,7 +589,7 @@ async function runWithMutualExclusionLock({ waitSeconds, action }) {
     }
 }
 
-async function updateFromTelegramContinuously() {
+async function updateFromTelegramContinuously(extensionAPI) {
     for (;;) {
         if (updateContinuously==false){
             console.log("breaking")
@@ -616,24 +617,98 @@ async function updateFromTelegramContinuously() {
 }
 
 function graphName() {
-    return document.location.hash.split("/")[2]
+    return window.roamAlphaAPI.graph.name
 }
 
 async function onload({extensionAPI}) {
-    // set defaults if they dont' exist
-    // if (!extensionAPI.settings.get('data')) {
-    //     await extensionAPI.settings.set('data', "01");
-    // }
-    // extensionAPI.settings.panel.create(panelConfig);
+    // set default setting
+    if (!extensionAPI.settings.get('update-id')) {
+    await extensionAPI.settings.set('update-id', "01");
+    }
+    if (!extensionAPI.settings.get('api-key')) {
+    await extensionAPI.settings.set('api-key', "");
+    }
+    if (!extensionAPI.settings.get('proxy')) {
+    await extensionAPI.settings.set('proxy', "https://telegram-cors-proxy.herokuapp.com");
+    }
+    if (!extensionAPI.settings.get('inbox-name')) {
+    await extensionAPI.settings.set('inbox-name', "#inbox");
+    }
+    if (!extensionAPI.settings.get('timestamp-location')) {
+    await extensionAPI.settings.set('timestamp-location', "NONE");
+    }
+    if (!extensionAPI.settings.get('sender-location')) {
+    await extensionAPI.settings.set('sender-location', "NONE");
+    }
+
+    const panelConfig = {
+        tabTitle: "Telegroam",
+        settings: [
+            {id:     "api-key",
+              name:   "API Key",
+              description: "Your custom Telegram Bot API key. Refresh page after update.",
+              action: {type:        "input",
+                      placeholder: "",
+                      onChange:    async (evt) => { 
+                          extensionAPI.settings.set('api-key', evt.target.value);
+                          console.log(evt.target.value,extensionAPI.settings.get('api-key'))
+                      }}},
+            {id:     "inbox-name",
+            name:   "Inbox Name",
+            description:  "The tag your telegram imports will be nested under. Refresh page after update.",
+            action: {type:        "input",
+                      placeholder: "#inbox",
+                      onChange:    (evt) => { 
+                        // console.log("Tweet Extract Template Changed!", evt.target.value); 
+                        // template = evt.target.value;
+                      }}},
+            {id:          "inbox-location",
+              name:        "Inbox Location",
+              description: "NOT WORKING: Options for the location of the inbox tag on the daily notes page",
+              action:      {type:     "select",
+                            items:    ["FIRST", "LAST"],
+                            onChange: (evt) => { console.log("Select Changed!", evt); }}},
+            {id:     "proxy",
+              name:   "Trusted Media Proxy",
+              description: "The proxy server your messages will be routed through. Only change this if you know what you are doing",
+              action: {type:        "input",
+                      placeholder: "https://telegram-cors-proxy.herokuapp.com",
+                      onChange:    (evt) => { 
+                        // console.log("Tweet Extract Template Changed!", evt.target.value); 
+                        // template = evt.target.value;
+                      }}},
+            {id:          "timestamp-location",
+            name:        "Timestamp Location",
+            description: "Options for the location of the time the telegram message was sent",
+            action:      {type:     "select",
+                          items:    ["NONE", "INLINE", "NESTED"],
+                          onChange: (evt) => { console.log("Select Changed!", evt); }}},
+            {id:          "sender-location",
+            name:        "Sender Location",
+            description:  "Options for the location of the telegram message sender name",
+            action:      {type:     "select",
+                          items:    ["NONE", "INLINE", "NESTED"],
+                          onChange: (evt) => { console.log("Select Changed!", evt); }}},
+            // {id:     "shortcodes",
+            //   name:   "Shortcodes",
+            //   action: {type:     "reactComponent",
+            //           component: shortcodeComponent}},
+            // {id:     "update-id",
+            //   name:   "Update ID",
+            //   action: {type:     "reactComponent",
+            //           component: wrappedUpdateID}}
+        ]
+      };
+    extensionAPI.settings.panel.create(panelConfig);
 
     console.log("load telegroam plugin");
-    updateFromTelegramContinuously()
+    updateFromTelegramContinuously(extensionAPI)
 }
 
 function onunload() {
     updateContinuously = false;
     console.log("unload telegroam plugin");
-    
+
 }
   
 export default {
