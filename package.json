@@ -23,7 +23,6 @@
     "@blueprintjs/core": "^4.6.1"
   },
   "dependencies": {
-    "@blueprintjs/core": "^4.6.1",
     "cors-anywhere": "^0.4.4",
     "fetch-jsonp": "^1.2.1"
   }
