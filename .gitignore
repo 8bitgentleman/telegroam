@@ -1,1 +1,11 @@
-/node_modules
+node_modules
+  build
+  dist
+  out
+  .env
+  .env.local
+  extension.js
+  extension.js.LICENSE.txt
+  report.html
+  stats.json
+  

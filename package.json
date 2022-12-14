@@ -2,21 +2,20 @@
   "name": "telegroam",
   "version": "1.0.0",
   "description": "Send messages and photos to your own Telegram bot and have them appear in the Daily Notes page of your Roam graph.",
-  "main": "proxy.js",
+  "main": "./build/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "roamjs-scripts build",
+    "prebuild:roam": "npm install",
+    "build:roam": "roamjs-scripts build --depot",
+    "dev:roam": "roamjs-scripts dev --depot",
+    "dev": "roamjs-scripts dev"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mbrock/telegroam.git"
-  },
-  "author": "Mikael Brockman",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mbrock/telegroam/issues"
+  "devDependencies": {
+    "roamjs-scripts": "^0.26.22"
   },
-  "homepage": "https://github.com/mbrock/telegroam#readme",
   "dependencies": {
+    "roamjs-components": "^0.74.28",
     "cors-anywhere": "^0.4.4"
   }
 }
