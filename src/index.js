@@ -549,18 +549,22 @@ const lockStatus = {
 
 let currentLockPath
 
-async function runWithMutualExclusionLock({ waitSeconds, action }) {
-    let lockId =
-    await hashString([graphName(), telegramApiKey].join(":"))
+async function runWithMutualExclusionLock({ 
+    extensionAPI,
+    waitSeconds,
+    action }) {
 
-    let nonce =
-    roamAlphaAPI.util.generateUID()
+    let telegramApiKey = extensionAPI.settings.get('api-key');
 
-    let lockPath =
-    `https://binary-semaphore.herokuapp.com/lock/${lockId}/${nonce}`
+    // info for the CORS proxy
+    let lockId = await hashString([graphName(), telegramApiKey].join(":"))
 
-    let acquirePath = `${lockPath}/acquire`
-    let releasePath = `${lockPath}/release`
+    let nonce = roamAlphaAPI.util.generateUID()
+
+    let lockPath = `https://roam-binary-semaphore.herokuapp.com/lock/${lockId}/${nonce}`
+    
+    let acquirePath = `${lockPath}`
+    let releasePath = `${lockPath}`
 
     for (;;) {
         let result =
@@ -583,7 +587,7 @@ async function runWithMutualExclusionLock({ waitSeconds, action }) {
             }
 
         } else if (result.status === lockStatus.busy) {
-            // console.log(`telegroam: lock busy; waiting ${waitSeconds}s`)
+            console.log(`telegroam: lock busy; waiting ${waitSeconds}s`)
             await sleep(waitSeconds)
         }
     }
@@ -591,12 +595,14 @@ async function runWithMutualExclusionLock({ waitSeconds, action }) {
 
 async function updateFromTelegramContinuously(extensionAPI) {
     for (;;) {
+        // not sure this is the best way to stop telegroam
         if (updateContinuously==false){
             console.log("breaking")
             break 
         } else {
             try {
                 let result = await runWithMutualExclusionLock({
+                extensionAPI,
                 waitSeconds: 30,
                 action: async () => {
                     // console.log("telegroam: lock acquired; fetching messages")
@@ -625,11 +631,13 @@ async function onload({extensionAPI}) {
     if (!extensionAPI.settings.get('update-id')) {
     await extensionAPI.settings.set('update-id', "01");
     }
+    // TODO what happens on first load when the api-key hasn't been set yet?
+    // need to prompt the user somehow
     if (!extensionAPI.settings.get('api-key')) {
     await extensionAPI.settings.set('api-key', "");
     }
     if (!extensionAPI.settings.get('proxy')) {
-    await extensionAPI.settings.set('proxy', "https://telegram-cors-proxy.herokuapp.com");
+    await extensionAPI.settings.set('proxy', "https://telegroam-cors-proxy.herokuapp.com");
     }
     if (!extensionAPI.settings.get('inbox-name')) {
     await extensionAPI.settings.set('inbox-name', "#inbox");
@@ -672,7 +680,7 @@ async function onload({extensionAPI}) {
               name:   "Trusted Media Proxy",
               description: "The proxy server your messages will be routed through. Only change this if you know what you are doing",
               action: {type:        "input",
-                      placeholder: "https://telegram-cors-proxy.herokuapp.com",
+                      placeholder: "https://telegroam-cors-proxy.herokuapp.com",
                       onChange:    (evt) => { 
                         // console.log("Tweet Extract Template Changed!", evt.target.value); 
                         // template = evt.target.value;

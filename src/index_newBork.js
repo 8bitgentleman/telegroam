@@ -804,6 +804,7 @@ function graphName() {
   return window.roamAlphaAPI.graph.name
 }
 
+// deleted
 async function startTelegroam(extensionAPI) {
   // We need to use the Firebase SDK, which Roam already uses, but
   // Roam uses it via Clojure or whatever, so we import the SDK
