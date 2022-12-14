@@ -2,6 +2,7 @@ import { Button, InputGroup, Intent, Label } from "@blueprintjs/core";
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
 import type { OnloadArgs } from "roamjs-components/types/native";
+import { PageInput } from "roamjs-components/components/PageInput";
 
 const HotKeyEntry = ({
   hotkey,
@@ -23,6 +24,9 @@ const HotKeyEntry = ({
   workflowNamesByUid: Record<string, string>;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [shortcode, setShortcode] = useState("");
+  const [expandedPage, setExpandedPage] = useState("");
+
   useEffect(() => {
     inputRef.current.className = "rm-extensions-settings";
     inputRef.current.style.minWidth = "100%";
@@ -31,54 +35,23 @@ const HotKeyEntry = ({
   return (
     <div className={"flex items-center gap-1"}>
       <Label className="flex-1">
-        Hot Key
+        Shortcode
         <InputGroup
-          placeholder={"Type the keys themselves"}
-          value={hotkey}
+            placeholder={`Shortcode to be expanded into a full tag. Starts with ".", no spaces `}
+            value={shortcode}
           onChange={() => true}
           className={"w-full"}
           inputRef={inputRef}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const parts = hotkey ? hotkey.split("+") : [];
-            const formatValue = (
-              e.key === "Backspace"
-                ? parts.slice(0, -1)
-                : ["Shift", "Control", "Alt", "Meta"].includes(e.key)
-                ? Array.from(new Set(parts.concat(e.key.toLowerCase()))).sort(
-                    (a, b) => b.length - a.length
-                  )
-                : parts.concat(e.key.toLowerCase())
-            ).join("+");
-            if (formatValue === hotkey) return;
-            const error = !formatValue || !!keys[formatValue];
-            const newKeys = Object.fromEntries(
-              Object.entries(keys).map((k, o) =>
-                o !== order ? k : [formatValue, k[1]]
-              )
-            );
-            setKeys(newKeys);
-            if (!error) {
-              extensionAPI.settings.set("hot-keys", newKeys);
-            }
-          }}
           intent={Intent.NONE}
         />
       </Label>
       <Label className={"flex-1"}>
-        SmartBlock
-        <MenuItemSelect
-          activeItem={value}
-          items={workflows.map((w) => w.uid)}
-          onItemSelect={(e) => {
-            const newKeys = Object.fromEntries(
-              Object.entries(keys).map((k, o) => (o !== order ? k : [k[0], e]))
-            );
-            setKeys(newKeys);
-            extensionAPI.settings.set("hot-keys", newKeys);
-          }}
-          transformItem={(e) => workflowNamesByUid[e]}
+        Expanded Page
+        <PageInput
+          value={expandedPage}
+          setValue={(e:any) =>
+            setExpandedPage(e)
+          }
           className={"w-full"}
         />
       </Label>
