@@ -1,7 +1,6 @@
 import { Button, InputGroup, Intent, Label } from "@blueprintjs/core";
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
-import { getCleanCustomWorkflows } from "./core";
 import type { OnloadArgs } from "roamjs-components/types/native";
 
 const HotKeyEntry = ({
