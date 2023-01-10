@@ -1,6 +1,6 @@
 {
   "name": "roam-depot-tweet-extract",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Send messages and photos to your own Telegram bot and have them appear in the Daily Notes page of your Roam graph.",
   "main": "index.js",
   "scripts": {
@@ -20,10 +20,13 @@
   "devDependencies": {
     "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
-    "@blueprintjs/core": "^4.6.1"
+    "@blueprintjs/core": "^4.6.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
   },
   "dependencies": {
     "cors-anywhere": "^0.4.4",
+    "debounce": "^1.2.1",
     "fetch-jsonp": "^1.2.1"
   }
 }
